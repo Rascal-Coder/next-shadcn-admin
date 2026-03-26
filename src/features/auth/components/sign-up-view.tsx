@@ -1,5 +1,6 @@
 'use client';
 
+import { FormInput } from '@/components/forms/form-input';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -9,26 +10,65 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { setDemoSessionCookie } from '@/lib/demo-auth-client';
+import { Form } from '@/components/ui/form';
+import { persistAuthFromLoginData } from '@/lib/auth-storage';
+import { isSuccess } from '@/lib/response-code';
 import { cn } from '@/lib/utils';
+import { authControllerRegister } from '@/services/api/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
 import { InteractiveGridPattern } from './interactive-grid';
+
+const signUpSchema = z.object({
+  name: z.string(),
+  email: z.email('请输入有效的邮箱地址'),
+  password: z.string().min(4, '密码至少 4 位')
+});
+
+type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 export default function SignUpViewPage() {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const form = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: ''
+    }
+  });
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setPending(true);
-    setDemoSessionCookie();
-    router.push('/dashboard/overview');
-    router.refresh();
+  async function onSubmit(values: SignUpFormValues) {
+    try {
+      const nameTrimmed = values.name.trim();
+      const body: API.RegisterDto = {
+        email: values.email.trim(),
+        password: values.password
+      };
+      if (nameTrimmed !== '') {
+        body.name = nameTrimmed;
+      }
+      const res = await authControllerRegister(body);
+      if (!isSuccess(res.code)) {
+        return;
+      }
+      if (!persistAuthFromLoginData(res.data)) {
+        toast.info('注册成功，请使用新账号登录');
+        router.push('/auth/sign-in');
+        return;
+      }
+      router.push('/dashboard/overview');
+      router.refresh();
+    } catch {
+      // 网络层错误由 request 拦截器统一 Toast
+    }
   }
+
+  const pending = form.formState.isSubmitting;
 
   return (
     <div className='relative flex min-h-screen flex-col items-center justify-center overflow-hidden md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
@@ -62,44 +102,42 @@ export default function SignUpViewPage() {
             <CardHeader>
               <CardTitle>注册</CardTitle>
               <CardDescription>
-                演示表单：提交后写入本地演示 Cookie 并进入控制台（非真实注册）。
+                使用邮箱与密码注册；若后端在 data
+                中返回令牌将自动登录并进入控制台。
               </CardDescription>
             </CardHeader>
-            <form onSubmit={onSubmit} className='flex flex-col gap-6'>
+            <Form
+              form={form}
+              onSubmit={form.handleSubmit(onSubmit)}
+              className='flex flex-col gap-6'
+            >
               <CardContent className='space-y-4 pb-0'>
-                <div className='space-y-2'>
-                  <Label htmlFor='name'>姓名（可选）</Label>
-                  <Input
-                    id='name'
-                    name='name'
-                    type='text'
-                    autoComplete='name'
-                    placeholder='张三'
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='email'>邮箱</Label>
-                  <Input
-                    id='email'
-                    name='email'
-                    type='email'
-                    autoComplete='email'
-                    placeholder='you@example.com'
-                    required
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='password'>密码</Label>
-                  <Input
-                    id='password'
-                    name='password'
-                    type='password'
-                    autoComplete='new-password'
-                    placeholder='••••••••'
-                    minLength={4}
-                    required
-                  />
-                </div>
+                <FormInput
+                  control={form.control}
+                  name='name'
+                  type='text'
+                  label='姓名（可选）'
+                  placeholder='张三'
+                  autoComplete='name'
+                />
+                <FormInput
+                  control={form.control}
+                  name='email'
+                  type='email'
+                  label='邮箱'
+                  placeholder='you@example.com'
+                  autoComplete='email'
+                  required
+                />
+                <FormInput
+                  control={form.control}
+                  name='password'
+                  type='password'
+                  label='密码'
+                  placeholder='••••••••'
+                  autoComplete='new-password'
+                  required
+                />
               </CardContent>
               <CardFooter className='flex flex-col gap-3'>
                 <Button type='submit' className='w-full' disabled={pending}>
@@ -115,7 +153,7 @@ export default function SignUpViewPage() {
                   </Link>
                 </p>
               </CardFooter>
-            </form>
+            </Form>
           </Card>
           <p className='text-muted-foreground px-8 text-center text-sm'>
             继续即表示你同意我们的{' '}

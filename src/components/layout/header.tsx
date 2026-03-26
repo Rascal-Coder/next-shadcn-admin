@@ -6,7 +6,6 @@ import SearchInput from '../search-input';
 import { ThemeSelector } from '../themes/theme-selector';
 import { ThemeModeToggle } from '../themes/theme-mode-toggle';
 
-
 export default function Header() {
   return (
     <header className='bg-background sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between gap-2'>

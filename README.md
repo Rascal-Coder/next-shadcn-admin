@@ -2,7 +2,6 @@
 
 <div align="center">使用 Next.js 16、shadcn/ui、Tailwind CSS、TypeScript 搭建的开源管理后台脚手架</div>
 
-
 ## 概览
 
 这是一个基于 **Next.js 16、Shadcn UI、TypeScript 与 Tailwind CSS** 的**开源管理后台脚手架**。
@@ -27,7 +26,6 @@
 - 格式化 — [Prettier](https://prettier.io)
 - 主题 — [tweakcn](https://tweakcn.com/)
 
-
 ## 功能特性
 
 - 🧱 预置**管理后台布局**（侧栏、顶栏、内容区）
@@ -35,9 +33,6 @@
 - 📊 **分析总览**页，含卡片与图表
 
 - 📋 **数据表**支持服务端搜索、筛选与分页
-
-
-
 
 - 💳 **计费与订阅**相关页面示例（B2B 方案与功能开关需自行对接）
 
@@ -66,8 +61,6 @@
 - 客户项目后台
 
 - 新的 Next.js 管理 UI 起点工程
-
-
 
 ## 按功能组织的目录
 
@@ -105,7 +98,6 @@ src/
 > [!NOTE]  
 > 本模板使用 **Next.js 16（App Router）**、**React 19** 与 **Shadcn UI**。本地运行步骤：
 
-
 - 执行 `bun install`
 - 复制环境变量示例：`cp env.example.txt .env.local`（Windows 可手动复制并重命名）
 - 在 `.env.local` 中填写认证、数据库等所需变量
@@ -125,7 +117,6 @@ src/
 > 克隆或 Fork 后，与上游同步时可能产生冲突，合并前请先备份或审阅变更。
 
 ---
-
 
 ## 部署
 
@@ -160,7 +151,4 @@ docker run -d -p 3000:3000 \
 
 ### ⭐ 支持
 
-若本模板对你有帮助，欢迎点亮 Star ⭐  
-
-
-
+若本模板对你有帮助，欢迎点亮 Star ⭐

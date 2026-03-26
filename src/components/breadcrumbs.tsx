@@ -62,9 +62,7 @@ export function Breadcrumbs({ hideOnSingleItem = true }: BreadcrumbsProps) {
                         <IconComponent
                           className={cn(
                             'size-3.5 shrink-0',
-                            isLast
-                              ? 'text-foreground'
-                              : 'text-muted-foreground'
+                            isLast ? 'text-foreground' : 'text-muted-foreground'
                           )}
                           aria-hidden
                         />

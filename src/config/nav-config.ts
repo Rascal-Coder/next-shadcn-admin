@@ -42,7 +42,6 @@ export const navItems: NavItem[] = [
     items: []
   },
 
-
   {
     title: 'Product',
     url: '/dashboard/product',

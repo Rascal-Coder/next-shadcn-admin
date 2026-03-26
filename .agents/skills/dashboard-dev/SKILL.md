@@ -10,22 +10,22 @@ This skill encodes the exact patterns and conventions used in this Next.js 16 + 
 
 ## Quick Reference: What Goes Where
 
-| Task | Location |
-|------|----------|
-| New page | `src/app/dashboard/<name>/page.tsx` |
-| New feature | `src/features/<name>/components/` |
-| Nav item | `src/config/nav-config.ts` |
-| Types | `src/types/index.ts` |
-| Mock data | `src/constants/mock-api.ts` |
-| Search params | `src/lib/searchparams.ts` |
-| Theme CSS | `src/styles/themes/<name>.css` |
-| Theme registry | `src/components/themes/theme.config.ts` |
-| Chat feature | `src/features/chat/components/` |
-| Notifications | `src/features/notifications/components/` |
-| Kanban UI component | `src/components/ui/kanban.tsx` |
-| Custom hook | `src/hooks/` |
-| Form components | `src/components/forms/` |
-| Table components | `src/components/ui/table/` |
+| Task                | Location                                 |
+| ------------------- | ---------------------------------------- |
+| New page            | `src/app/dashboard/<name>/page.tsx`      |
+| New feature         | `src/features/<name>/components/`        |
+| Nav item            | `src/config/nav-config.ts`               |
+| Types               | `src/types/index.ts`                     |
+| Mock data           | `src/constants/mock-api.ts`              |
+| Search params       | `src/lib/searchparams.ts`                |
+| Theme CSS           | `src/styles/themes/<name>.css`           |
+| Theme registry      | `src/components/themes/theme.config.ts`  |
+| Chat feature        | `src/features/chat/components/`          |
+| Notifications       | `src/features/notifications/components/` |
+| Kanban UI component | `src/components/ui/kanban.tsx`           |
+| Custom hook         | `src/hooks/`                             |
+| Form components     | `src/components/forms/`                  |
+| Table components    | `src/components/ui/table/`               |
 
 ---
 
@@ -78,6 +78,7 @@ export default async function Page(props: PageProps) {
 ```
 
 **Key points:**
+
 - `searchParams` is a `Promise` — always `await` it
 - Use `searchParamsCache.parse()` before rendering content that uses search params
 - Wrap async data-fetching components in `<Suspense>`
@@ -145,9 +146,7 @@ export default async function FeatureListingPage() {
   const totalItems = data.total_items;
   const items = data.items;
 
-  return (
-    <FeatureTable data={items} totalItems={totalItems} />
-  );
+  return <FeatureTable data={items} totalItems={totalItems} />;
 }
 ```
 
@@ -211,6 +210,7 @@ export const columns: ColumnDef<YourType>[] = [
 ```
 
 **Filter variants** (set in `meta.variant`):
+
 - `text` — text search with operators (contains, is, etc.)
 - `number` — numeric filters
 - `range` — slider range
@@ -337,7 +337,10 @@ interface FeatureFormProps {
   pageTitle: string;
 }
 
-export default function FeatureForm({ initialData, pageTitle }: FeatureFormProps) {
+export default function FeatureForm({
+  initialData,
+  pageTitle
+}: FeatureFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
@@ -388,9 +391,7 @@ export default function FeatureForm({ initialData, pageTitle }: FeatureFormProps
               required
               config={{ maxLength: 500, showCharCount: true, rows: 4 }}
             />
-            <Button type='submit'>
-              {initialData ? 'Update' : 'Create'}
-            </Button>
+            <Button type='submit'>{initialData ? 'Update' : 'Create'}</Button>
           </form>
         </Form>
       </CardContent>
@@ -400,6 +401,7 @@ export default function FeatureForm({ initialData, pageTitle }: FeatureFormProps
 ```
 
 **Available form components** (all accept `control`, `name`, `label`, `description`, `required`, `disabled`):
+
 - `FormInput` — text, email, number, password inputs
 - `FormSelect` — dropdown select with `options` prop
 - `FormTextarea` — textarea with optional `config` (maxLength, showCharCount, rows, resize)
@@ -416,9 +418,9 @@ export const navItems: NavItem[] = [
   {
     title: 'Feature Name',
     url: '/dashboard/feature',
-    icon: 'iconName',           // Key from Icons registry
-    shortcut: ['f', 'f'],       // Optional: kbar shortcut
-    items: []                   // Empty array = no sub-items
+    icon: 'iconName', // Key from Icons registry
+    shortcut: ['f', 'f'], // Optional: kbar shortcut
+    items: [] // Empty array = no sub-items
   },
   // With RBAC access control:
   {
@@ -426,9 +428,9 @@ export const navItems: NavItem[] = [
     url: '/dashboard/admin',
     icon: 'settings',
     access: {
-      requireOrg: true,                    // Needs active organization
-      permission: 'org:admin:manage',      // Needs specific permission
-      role: 'admin'                        // Needs specific role
+      requireOrg: true, // Needs active organization
+      permission: 'org:admin:manage', // Needs specific permission
+      role: 'admin' // Needs specific role
     },
     items: []
   },
@@ -437,7 +439,7 @@ export const navItems: NavItem[] = [
     title: 'Parent',
     url: '#',
     icon: 'folder',
-    isActive: true,             // Expanded by default
+    isActive: true, // Expanded by default
     items: [
       {
         title: 'Child Page',
@@ -451,6 +453,7 @@ export const navItems: NavItem[] = [
 ```
 
 **Access control options** (all client-side via Clerk hooks):
+
 - `requireOrg: boolean` — requires active organization
 - `permission: string` — requires Clerk permission (e.g., `'org:teams:manage'`)
 - `role: string` — requires Clerk role (e.g., `'admin'`)

@@ -1,5 +1,7 @@
 import { Icons } from '@/components/icons';
 
+export * from './api-response';
+
 export interface PermissionCheck {
   permission?: string;
   plan?: string;

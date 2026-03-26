@@ -1,6 +1,12 @@
 @import 'tailwindcss';
 
+@import 'nprogress/nprogress.css';
+
 @import 'tw-animate-css';
+
+#nprogress .bar {
+  background: var(--primary) !important;
+}
 
 @custom-variant dark (&:is(.dark *));
 

@@ -15,21 +15,18 @@ import { Kbd } from '@/components/ui/kbd';
 export function ThemeModeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
 
-  const handleThemeToggle = React.useCallback(
-    () => {
-      const newMode = resolvedTheme === 'dark' ? 'light' : 'dark';
+  const handleThemeToggle = React.useCallback(() => {
+    const newMode = resolvedTheme === 'dark' ? 'light' : 'dark';
 
-      if (!document.startViewTransition) {
-        setTheme(newMode);
-        return;
-      }
+    if (!document.startViewTransition) {
+      setTheme(newMode);
+      return;
+    }
 
-      document.startViewTransition(() => {
-        setTheme(newMode);
-      });
-    },
-    [resolvedTheme, setTheme]
-  );
+    document.startViewTransition(() => {
+      setTheme(newMode);
+    });
+  }, [resolvedTheme, setTheme]);
 
   return (
     <Tooltip>

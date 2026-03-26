@@ -31,14 +31,14 @@ Reference for AI agents and contributors: **stack, layout, conventions, and work
 
 Exact versions: see `package.json`. Pinned below for quick orientation.
 
-| Layer        | Choices |
-| ------------ | ------- |
-| Runtime      | Next.js 16.0.10, React 19.2.0, TypeScript 5.7.2 (`strict`) |
+| Layer        | Choices                                                                                                        |
+| ------------ | -------------------------------------------------------------------------------------------------------------- |
+| Runtime      | Next.js 16.0.10, React 19.2.0, TypeScript 5.7.2 (`strict`)                                                     |
 | UI & CSS     | Tailwind v4 (`@import 'tailwindcss'`), PostCSS + `@tailwindcss/postcss`, shadcn/ui (Radix), OKLCH theme tokens |
-| State & URLs | Zustand 5.x, Nuqs, React Hook Form + Zod |
-| Data & viz   | TanStack Table, Recharts; mocks in `src/constants/mock-api.ts` |
-| Tooling      | ESLint (core-web-vitals), Prettier + Tailwind plugin, Husky, lint-staged |
-| Containers   | `Dockerfile` (Node), `Dockerfile.bun` (Bun) |
+| State & URLs | Zustand 5.x, Nuqs, React Hook Form + Zod                                                                       |
+| Data & viz   | TanStack Table, Recharts; mocks in `src/constants/mock-api.ts`                                                 |
+| Tooling      | ESLint (core-web-vitals), Prettier + Tailwind plugin, Husky, lint-staged                                       |
+| Containers   | `Dockerfile` (Node), `Dockerfile.bun` (Bun)                                                                    |
 
 ---
 
@@ -81,15 +81,15 @@ Dockerfile · Dockerfile.bun · .dockerignore
 
 ## Commands
 
-| Goal | Command |
-| ---- | ------- |
-| Install | `bun install` |
-| Dev (http://localhost:3000) | `bun run dev` |
-| Production build | `bun run build` |
-| Production server | `bun run start` |
-| Lint | `bun run lint` · `bun run lint:fix` · `bun run lint:strict` |
-| Format | `bun run format` · `bun run format:check` |
-| Git hooks | `bun run prepare` |
+| Goal                        | Command                                                     |
+| --------------------------- | ----------------------------------------------------------- |
+| Install                     | `bun install`                                               |
+| Dev (http://localhost:3000) | `bun run dev`                                               |
+| Production build            | `bun run build`                                             |
+| Production server           | `bun run start`                                             |
+| Lint                        | `bun run lint` · `bun run lint:fix` · `bun run lint:strict` |
+| Format                      | `bun run format` · `bun run format:check`                   |
+| Git hooks                   | `bun run prepare`                                           |
 
 ---
 
@@ -136,11 +136,11 @@ Copy `env.example.txt` → `.env.local`. Expose client values with the `NEXT_PUB
 
 Built-in theme names: `vercel` (default), `claude`, `neobrutualism`, `supabase`, `mono`, `notebook`, `light-green`, `zen`, `astro-vista`, `whatsapp`.
 
-| Concern | Location |
-| ------- | -------- |
-| Theme CSS | `src/styles/themes/{theme-name}.css` |
-| Registry | `src/components/themes/theme.config.ts` |
-| Fonts | `src/components/themes/font.config.ts` |
+| Concern         | Location                                 |
+| --------------- | ---------------------------------------- |
+| Theme CSS       | `src/styles/themes/{theme-name}.css`     |
+| Registry        | `src/components/themes/theme.config.ts`  |
+| Fonts           | `src/components/themes/font.config.ts`   |
 | Active provider | `src/components/themes/active-theme.tsx` |
 
 **Add a theme:** (1) CSS file with `[data-theme='your-theme']`, (2) import in `src/styles/theme.css`, (3) append to `THEMES` in `theme.config.ts`, (4) optional fonts / default. Details: `docs/themes.md`.
@@ -163,13 +163,13 @@ export const navItems: NavItem[] = [
 ];
 ```
 
-| Field | Meaning |
-| ----- | ------- |
+| Field        | Meaning             |
+| ------------ | ------------------- |
 | `requireOrg` | Active org required |
-| `permission` | Named permission |
-| `role` | Named role |
-| `plan` | Subscription plan |
-| `feature` | Feature flag |
+| `permission` | Named permission    |
+| `role`       | Named role          |
+| `plan`       | Subscription plan   |
+| `feature`    | Feature flag        |
 
 `useFilteredNavItems()` in `src/hooks/use-nav.ts` adjusts the sidebar for UX only; **authorize on the server**.
 
@@ -227,22 +227,22 @@ Requires git history (≥1 commit) unless `--force`. You may delete the script a
 
 ## Common tasks
 
-| Task | Steps |
-| ---- | ----- |
-| Page | `src/app/dashboard/.../page.tsx` + item in `nav-config.ts` + UI under `src/features/...` |
-| API route | `src/app/api/.../route.ts` with `GET`/`POST`/… |
-| shadcn widget | `npx shadcn add <component>` |
-| Theme | [Themes](#themes) + `docs/themes.md` |
+| Task          | Steps                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| Page          | `src/app/dashboard/.../page.tsx` + item in `nav-config.ts` + UI under `src/features/...` |
+| API route     | `src/app/api/.../route.ts` with `GET`/`POST`/…                                           |
+| shadcn widget | `npx shadcn add <component>`                                                             |
+| Theme         | [Themes](#themes) + `docs/themes.md`                                                     |
 
 ---
 
 ## Troubleshooting
 
-| Issue | Checks |
-| ----- | ------ |
-| Tailwind | v4 `@import 'tailwindcss'`; `@tailwindcss/postcss` in PostCSS |
-| Theme | `[data-theme]` matches `theme.config.ts`; file imported from `theme.css` |
-| Missing nav | `access` in `nav-config`; user/org context matches server rules |
+| Issue       | Checks                                                                   |
+| ----------- | ------------------------------------------------------------------------ |
+| Tailwind    | v4 `@import 'tailwindcss'`; `@tailwindcss/postcss` in PostCSS            |
+| Theme       | `[data-theme]` matches `theme.config.ts`; file imported from `theme.css` |
+| Missing nav | `access` in `nav-config`; user/org context matches server rules          |
 
 ---
 

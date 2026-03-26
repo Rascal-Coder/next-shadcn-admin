@@ -26,113 +26,110 @@ type ButtonProps = Omit<HTMLMotionProps<'button'>, 'children'> &
     tapScale?: number;
   };
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  function Button(
-    {
-      className,
-      variant,
-      size,
-      asChild = false,
-      ripple: rippleProp = true,
-      hoverScale = 1.02,
-      tapScale = 0.98,
-      style,
-      disabled,
-      onClick,
-      children,
-      ...props
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  {
+    className,
+    variant,
+    size,
+    asChild = false,
+    ripple: rippleProp = true,
+    hoverScale = 1.02,
+    tapScale = 0.98,
+    style,
+    disabled,
+    onClick,
+    children,
+    ...props
+  },
+  ref
+) {
+  const reduceMotion = useReducedMotion();
+  const [ripples, setRipples] = React.useState<Ripple[]>([]);
+  const rippleIdRef = React.useRef(0);
+
+  const rippleEnabled = rippleProp ?? (!asChild && variant !== 'link');
+
+  const Comp = asChild ? MotionSlot : motion.button;
+
+  const createRipple = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (!rippleEnabled || disabled) return;
+
+      const target = event.currentTarget;
+      const rect = target.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      rippleIdRef.current += 1;
+      const id = rippleIdRef.current;
+      const newRipple: Ripple = { id, x, y };
+
+      setRipples((prev) => [...prev, newRipple]);
+
+      window.setTimeout(() => {
+        setRipples((prev) => prev.filter((r) => r.id !== id));
+      }, 600);
     },
-    ref
-  ) {
-    const reduceMotion = useReducedMotion();
-    const [ripples, setRipples] = React.useState<Ripple[]>([]);
-    const rippleIdRef = React.useRef(0);
+    [rippleEnabled, disabled]
+  );
 
-    const rippleEnabled =
-      rippleProp ?? (!asChild && variant !== 'link');
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      createRipple(event);
+      onClick?.(event);
+    },
+    [createRipple, onClick]
+  );
 
-    const Comp = asChild ? MotionSlot : motion.button;
+  const motionScale = reduceMotion
+    ? undefined
+    : { whileHover: { scale: hoverScale }, whileTap: { scale: tapScale } };
 
-    const createRipple = React.useCallback(
-      (event: React.MouseEvent<HTMLButtonElement>) => {
-        if (!rippleEnabled || disabled) return;
-
-        const target = event.currentTarget;
-        const rect = target.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        rippleIdRef.current += 1;
-        const id = rippleIdRef.current;
-        const newRipple: Ripple = { id, x, y };
-
-        setRipples((prev) => [...prev, newRipple]);
-
-        window.setTimeout(() => {
-          setRipples((prev) => prev.filter((r) => r.id !== id));
-        }, 600);
-      },
-      [rippleEnabled, disabled]
-    );
-
-    const handleClick = React.useCallback(
-      (event: React.MouseEvent<HTMLButtonElement>) => {
-        createRipple(event);
-        onClick?.(event);
-      },
-      [createRipple, onClick]
-    );
-
-    const motionScale = reduceMotion
-      ? undefined
-      : { whileHover: { scale: hoverScale }, whileTap: { scale: tapScale } };
-
-    const rippleLayer =
-      rippleEnabled &&
-      ripples.map((r) => (
-        <motion.span
-          key={r.id}
-          aria-hidden
-          className='pointer-events-none absolute rounded-full bg-foreground/25'
-          initial={{ scale: 0, opacity: 0.45 }}
-          animate={{ scale: 10, opacity: 0 }}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
-          style={{
-            width: 20,
-            height: 20,
-            top: r.y - 10,
-            left: r.x - 10
-          }}
-        />
-      ));
-
-    return (
-      <Comp
-        ref={ref}
-        data-slot='button'
-        className={cn(buttonVariants({ variant, size, className }))}
-        disabled={disabled}
+  const rippleLayer =
+    rippleEnabled &&
+    ripples.map((r) => (
+      <motion.span
+        key={r.id}
+        aria-hidden
+        className='bg-foreground/25 pointer-events-none absolute rounded-full'
+        initial={{ scale: 0, opacity: 0.45 }}
+        animate={{ scale: 10, opacity: 0 }}
+        transition={{ duration: 0.55, ease: 'easeOut' }}
         style={{
-          position: 'relative',
-          ...(rippleEnabled ? { overflow: 'hidden' } : null),
-          ...style
+          width: 20,
+          height: 20,
+          top: r.y - 10,
+          left: r.x - 10
         }}
-        onClick={handleClick}
-        {...motionScale}
-        {...props}
-      >
-        {asChild ? (
-          children
-        ) : (
-          <>
-            {rippleLayer}
-            {children}
-          </>
-        )}
-      </Comp>
-    );
-  }
-);
+      />
+    ));
+
+  return (
+    <Comp
+      ref={ref}
+      data-slot='button'
+      className={cn(buttonVariants({ variant, size, className }))}
+      disabled={disabled}
+      style={{
+        position: 'relative',
+        ...(rippleEnabled ? { overflow: 'hidden' } : null),
+        ...style
+      }}
+      onClick={handleClick}
+      {...motionScale}
+      {...props}
+    >
+      {asChild ? (
+        children
+      ) : (
+        <>
+          {rippleLayer}
+          {children}
+        </>
+      )}
+    </Comp>
+  );
+});
 
 Button.displayName = 'Button';
 

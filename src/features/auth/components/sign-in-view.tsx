@@ -1,5 +1,6 @@
 'use client';
 
+import { FormInput } from '@/components/forms/form-input';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -9,26 +10,51 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { setDemoSessionCookie } from '@/lib/demo-auth-client';
+import { Form } from '@/components/ui/form';
+import { isSuccess } from '@/lib/response-code';
 import { cn } from '@/lib/utils';
+import { authControllerLogin } from '@/services/api/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 import { InteractiveGridPattern } from './interactive-grid';
+
+const signInSchema = z.object({
+  email: z.email('请输入有效的邮箱地址'),
+  password: z.string().min(4, '密码至少 4 位')
+});
+
+type SignInFormValues = z.infer<typeof signInSchema>;
 
 export default function SignInViewPage() {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const form = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: 'admin@example.com',
+      password: 'Admin12345!'
+    }
+  });
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setPending(true);
-    setDemoSessionCookie();
-    router.push('/dashboard/overview');
-    router.refresh();
+  async function onSubmit(values: SignInFormValues) {
+    try {
+      const res = await authControllerLogin({
+        email: values.email.trim(),
+        password: values.password
+      });
+      if (!isSuccess(res.code)) {
+        return;
+      }
+      router.push('/dashboard/overview');
+      router.refresh();
+    } catch {
+      // 网络层错误由 request 拦截器统一 Toast
+    }
   }
+
+  const pending = form.formState.isSubmitting;
 
   return (
     <div className='relative flex min-h-screen flex-col items-center justify-center overflow-hidden md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
@@ -62,34 +88,33 @@ export default function SignInViewPage() {
             <CardHeader>
               <CardTitle>登录</CardTitle>
               <CardDescription>
-                演示表单：提交后写入本地演示 Cookie 并进入控制台（非真实认证）。
+                使用邮箱与密码登录；成功后保存访问令牌并进入控制台。
               </CardDescription>
             </CardHeader>
-            <form onSubmit={onSubmit} className='flex flex-col gap-6'>
+            <Form
+              form={form}
+              onSubmit={form.handleSubmit(onSubmit)}
+              className='flex flex-col gap-6'
+            >
               <CardContent className='space-y-4 pb-0'>
-                <div className='space-y-2'>
-                  <Label htmlFor='email'>邮箱</Label>
-                  <Input
-                    id='email'
-                    name='email'
-                    type='email'
-                    autoComplete='email'
-                    placeholder='you@example.com'
-                    required
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='password'>密码</Label>
-                  <Input
-                    id='password'
-                    name='password'
-                    type='password'
-                    autoComplete='current-password'
-                    placeholder='••••••••'
-                    minLength={4}
-                    required
-                  />
-                </div>
+                <FormInput
+                  control={form.control}
+                  name='email'
+                  type='email'
+                  label='邮箱'
+                  placeholder='you@example.com'
+                  autoComplete='email'
+                  required
+                />
+                <FormInput
+                  control={form.control}
+                  name='password'
+                  type='password'
+                  label='密码'
+                  placeholder='••••••••'
+                  autoComplete='current-password'
+                  required
+                />
               </CardContent>
               <CardFooter className='flex flex-col gap-3'>
                 <Button type='submit' className='w-full' disabled={pending}>
@@ -105,7 +130,7 @@ export default function SignInViewPage() {
                   </Link>
                 </p>
               </CardFooter>
-            </form>
+            </Form>
           </Card>
 
           <p className='text-muted-foreground px-8 text-center text-sm'>

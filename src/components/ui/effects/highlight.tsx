@@ -18,7 +18,7 @@ const DEFAULT_BOUNDS_OFFSET: Bounds = {
   top: 0,
   left: 0,
   width: 0,
-  height: 0,
+  height: 0
 };
 
 type HighlightContextType<T extends string> = {
@@ -80,11 +80,11 @@ type ParentModeHighlightProps = {
 
 type ControlledParentModeHighlightProps<T extends React.ElementType = 'div'> =
   BaseHighlightProps<T> &
-  ParentModeHighlightProps & {
-    mode: 'parent';
-    controlledItems: true;
-    children: React.ReactNode;
-  };
+    ParentModeHighlightProps & {
+      mode: 'parent';
+      controlledItems: true;
+      children: React.ReactNode;
+    };
 
 type ControlledChildrenModeHighlightProps<T extends React.ElementType = 'div'> =
   BaseHighlightProps<T> & {
@@ -95,15 +95,15 @@ type ControlledChildrenModeHighlightProps<T extends React.ElementType = 'div'> =
 
 type UncontrolledParentModeHighlightProps<T extends React.ElementType = 'div'> =
   BaseHighlightProps<T> &
-  ParentModeHighlightProps & {
-    mode: 'parent';
-    controlledItems?: false;
-    itemsClassName?: string;
-    children: React.ReactElement | React.ReactElement[];
-  };
+    ParentModeHighlightProps & {
+      mode: 'parent';
+      controlledItems?: false;
+      itemsClassName?: string;
+      children: React.ReactElement | React.ReactElement[];
+    };
 
 type UncontrolledChildrenModeHighlightProps<
-  T extends React.ElementType = 'div',
+  T extends React.ElementType = 'div'
 > = BaseHighlightProps<T> & {
   mode?: 'children';
   controlledItems?: false;
@@ -136,7 +136,7 @@ function Highlight<T extends React.ElementType = 'div'>({
     controlledItems,
     disabled = false,
     exitDelay = 200,
-    mode = 'children',
+    mode = 'children'
   } = props;
 
   const localRef = React.useRef<HTMLDivElement>(null);
@@ -153,7 +153,7 @@ function Highlight<T extends React.ElementType = 'div'>({
     top: boundsOffsetTop,
     left: boundsOffsetLeft,
     width: boundsOffsetWidth,
-    height: boundsOffsetHeight,
+    height: boundsOffsetHeight
   });
 
   React.useEffect(() => {
@@ -161,17 +161,17 @@ function Highlight<T extends React.ElementType = 'div'>({
       top: boundsOffsetTop,
       left: boundsOffsetLeft,
       width: boundsOffsetWidth,
-      height: boundsOffsetHeight,
+      height: boundsOffsetHeight
     };
   }, [
     boundsOffsetTop,
     boundsOffsetLeft,
     boundsOffsetWidth,
-    boundsOffsetHeight,
+    boundsOffsetHeight
   ]);
 
   const [activeValue, setActiveValue] = React.useState<string | null>(
-    value ?? defaultValue ?? null,
+    value ?? defaultValue ?? null
   );
   const [boundsState, setBoundsState] = React.useState<Bounds | null>(null);
   const [activeClassNameState, setActiveClassNameState] =
@@ -201,7 +201,7 @@ function Highlight<T extends React.ElementType = 'div'>({
         top: bounds.top - containerRect.top + offset.top,
         left: bounds.left - containerRect.left + offset.left,
         width: bounds.width + offset.width,
-        height: bounds.height + offset.height,
+        height: bounds.height + offset.height
       };
 
       setBoundsState((prev) => {
@@ -242,7 +242,7 @@ function Highlight<T extends React.ElementType = 'div'>({
     const onScroll = () => {
       if (!activeValue) return;
       const activeEl = container.querySelector<HTMLElement>(
-        `[data-value="${activeValue}"][data-highlight="true"]`,
+        `[data-value="${activeValue}"][data-highlight="true"]`
       );
       if (activeEl)
         safeSetBoundsRef.current?.(activeEl.getBoundingClientRect());
@@ -257,34 +257,34 @@ function Highlight<T extends React.ElementType = 'div'>({
       return (
         <Component
           ref={localRef}
-          data-slot="motion-highlight-container"
+          data-slot='motion-highlight-container'
           style={{ position: 'relative', zIndex: 1 }}
           className={(props as ParentModeHighlightProps)?.containerClassName}
         >
-          <AnimatePresence initial={false} mode="wait">
+          <AnimatePresence initial={false} mode='wait'>
             {boundsState && (
               <motion.div
-                data-slot="motion-highlight"
+                data-slot='motion-highlight'
                 animate={{
                   top: boundsState.top,
                   left: boundsState.left,
                   width: boundsState.width,
                   height: boundsState.height,
-                  opacity: 1,
+                  opacity: 1
                 }}
                 initial={{
                   top: boundsState.top,
                   left: boundsState.left,
                   width: boundsState.width,
                   height: boundsState.height,
-                  opacity: 0,
+                  opacity: 0
                 }}
                 exit={{
                   opacity: 0,
                   transition: {
                     ...transition,
-                    delay: (transition?.delay ?? 0) + (exitDelay ?? 0) / 1000,
-                  },
+                    delay: (transition?.delay ?? 0) + (exitDelay ?? 0) / 1000
+                  }
                 }}
                 transition={transition}
                 style={{ position: 'absolute', zIndex: 0, ...style }}
@@ -320,19 +320,19 @@ function Highlight<T extends React.ElementType = 'div'>({
         activeClassName: activeClassNameState,
         setActiveClassName: setActiveClassNameState,
         forceUpdateBounds: (props as ParentModeHighlightProps)
-          ?.forceUpdateBounds,
+          ?.forceUpdateBounds
       }}
     >
       {enabled
         ? controlledItems
           ? render(children)
           : render(
-            React.Children.map(children, (child, index) => (
-              <HighlightItem key={index} className={props?.itemsClassName}>
-                {child}
-              </HighlightItem>
-            )),
-          )
+              React.Children.map(children, (child, index) => (
+                <HighlightItem key={index} className={props?.itemsClassName}>
+                  {child}
+                </HighlightItem>
+              ))
+            )
         : children}
     </HighlightContext.Provider>
   );
@@ -340,7 +340,7 @@ function Highlight<T extends React.ElementType = 'div'>({
 
 function getNonOverridingDataAttributes(
   element: React.ReactElement,
-  dataAttributes: Record<string, unknown>,
+  dataAttributes: Record<string, unknown>
 ): Record<string, unknown> {
   return Object.keys(dataAttributes).reduce<Record<string, unknown>>(
     (acc, key) => {
@@ -349,7 +349,7 @@ function getNonOverridingDataAttributes(
       }
       return acc;
     },
-    {},
+    {}
   );
 }
 
@@ -412,7 +412,7 @@ function HighlightItem<T extends React.ElementType>({
     disabled: contextDisabled,
     exitDelay: contextExitDelay,
     forceUpdateBounds: contextForceUpdateBounds,
-    setActiveClassName,
+    setActiveClassName
   } = useHighlight();
 
   const Component = as ?? 'div';
@@ -476,7 +476,7 @@ function HighlightItem<T extends React.ElementType>({
     activeClassName,
     setActiveClassName,
     forceUpdateBounds,
-    contextForceUpdateBounds,
+    contextForceUpdateBounds
   ]);
 
   if (!React.isValidElement(children)) return children;
@@ -486,27 +486,27 @@ function HighlightItem<T extends React.ElementType>({
     'aria-selected': isActive,
     'data-disabled': isDisabled,
     'data-value': childValue,
-    'data-highlight': true,
+    'data-highlight': true
   };
 
   const commonHandlers = hover
     ? {
-      onMouseEnter: (e: React.MouseEvent<HTMLDivElement>) => {
-        setActiveValue(childValue);
-        element.props.onMouseEnter?.(e);
-      },
-      onMouseLeave: (e: React.MouseEvent<HTMLDivElement>) => {
-        setActiveValue(null);
-        element.props.onMouseLeave?.(e);
-      },
-    }
+        onMouseEnter: (e: React.MouseEvent<HTMLDivElement>) => {
+          setActiveValue(childValue);
+          element.props.onMouseEnter?.(e);
+        },
+        onMouseLeave: (e: React.MouseEvent<HTMLDivElement>) => {
+          setActiveValue(null);
+          element.props.onMouseLeave?.(e);
+        }
+      }
     : click
       ? {
-        onClick: (e: React.MouseEvent<HTMLDivElement>) => {
-          setActiveValue(childValue);
-          element.props.onClick?.(e);
-        },
-      }
+          onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+            setActiveValue(childValue);
+            element.props.onClick?.(e);
+          }
+        }
       : {};
 
   if (asChild) {
@@ -519,22 +519,22 @@ function HighlightItem<T extends React.ElementType>({
           className: cn('relative', element.props.className),
           ...getNonOverridingDataAttributes(element, {
             ...dataAttributes,
-            'data-slot': 'motion-highlight-item-container',
+            'data-slot': 'motion-highlight-item-container'
           }),
           ...commonHandlers,
-          ...props,
+          ...props
         },
         <>
-          <AnimatePresence initial={false} mode="wait">
+          <AnimatePresence initial={false} mode='wait'>
             {isActive && !isDisabled && (
               <motion.div
                 layoutId={`transition-background-${contextId}`}
-                data-slot="motion-highlight"
+                data-slot='motion-highlight'
                 style={{
                   position: 'absolute',
                   zIndex: 0,
                   ...contextStyle,
-                  ...style,
+                  ...style
                 }}
                 className={cn(contextClassName, activeClassName)}
                 transition={itemTransition}
@@ -546,8 +546,8 @@ function HighlightItem<T extends React.ElementType>({
                     ...itemTransition,
                     delay:
                       (itemTransition?.delay ?? 0) +
-                      (exitDelay ?? contextExitDelay ?? 0) / 1000,
-                  },
+                      (exitDelay ?? contextExitDelay ?? 0) / 1000
+                  }
                 }}
                 {...dataAttributes}
               />
@@ -555,14 +555,14 @@ function HighlightItem<T extends React.ElementType>({
           </AnimatePresence>
 
           <Component
-            data-slot="motion-highlight-item"
+            data-slot='motion-highlight-item'
             style={{ position: 'relative', zIndex: 1 }}
             className={className}
             {...dataAttributes}
           >
             {children}
           </Component>
-        </>,
+        </>
       );
     }
 
@@ -570,9 +570,9 @@ function HighlightItem<T extends React.ElementType>({
       ref: refCallback,
       ...getNonOverridingDataAttributes(element, {
         ...dataAttributes,
-        'data-slot': 'motion-highlight-item',
+        'data-slot': 'motion-highlight-item'
       }),
-      ...commonHandlers,
+      ...commonHandlers
     });
   }
 
@@ -580,23 +580,23 @@ function HighlightItem<T extends React.ElementType>({
     <Component
       key={childValue}
       ref={localRef}
-      data-slot="motion-highlight-item-container"
+      data-slot='motion-highlight-item-container'
       className={cn(mode === 'children' && 'relative', className)}
       {...dataAttributes}
       {...props}
       {...commonHandlers}
     >
       {mode === 'children' && (
-        <AnimatePresence initial={false} mode="wait">
+        <AnimatePresence initial={false} mode='wait'>
           {isActive && !isDisabled && (
             <motion.div
               layoutId={`transition-background-${contextId}`}
-              data-slot="motion-highlight"
+              data-slot='motion-highlight'
               style={{
                 position: 'absolute',
                 zIndex: 0,
                 ...contextStyle,
-                ...style,
+                ...style
               }}
               className={cn(contextClassName, activeClassName)}
               transition={itemTransition}
@@ -608,8 +608,8 @@ function HighlightItem<T extends React.ElementType>({
                   ...itemTransition,
                   delay:
                     (itemTransition?.delay ?? 0) +
-                    (exitDelay ?? contextExitDelay ?? 0) / 1000,
-                },
+                    (exitDelay ?? contextExitDelay ?? 0) / 1000
+                }
               }}
               {...dataAttributes}
             />
@@ -622,8 +622,8 @@ function HighlightItem<T extends React.ElementType>({
         className: element.props.className,
         ...getNonOverridingDataAttributes(element, {
           ...dataAttributes,
-          'data-slot': 'motion-highlight-item',
-        }),
+          'data-slot': 'motion-highlight-item'
+        })
       })}
     </Component>
   ) : (
@@ -636,5 +636,5 @@ export {
   HighlightItem,
   type HighlightItemProps,
   type HighlightProps,
-  useHighlight,
+  useHighlight
 };

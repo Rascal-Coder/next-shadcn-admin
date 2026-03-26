@@ -62,7 +62,7 @@ export default function AppSidebar() {
   const { isOpen } = useMediaQuery();
   const itemsToShow = useFilteredNavItems(navItems);
 
-  React.useEffect(() => { 
+  React.useEffect(() => {
     // Side effects based on sidebar state changes
   }, [isOpen]);
 
@@ -172,10 +172,7 @@ export default function AppSidebar() {
                   className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
                 >
                   <Avatar className='size-8 rounded-lg'>
-                    <AvatarImage
-                      src={USER_AVATAR_SRC}
-                      alt={USER_MENU.name}
-                    />
+                    <AvatarImage src={USER_AVATAR_SRC} alt={USER_MENU.name} />
                     <AvatarFallback className='rounded-lg text-xs'>
                       {USER_MENU.initials}
                     </AvatarFallback>
@@ -200,10 +197,7 @@ export default function AppSidebar() {
                 <DropdownMenuLabel className='p-0 font-normal'>
                   <div className='flex items-center gap-2 px-1 py-1.5'>
                     <Avatar className='size-8 rounded-lg'>
-                      <AvatarImage
-                        src={USER_AVATAR_SRC}
-                        alt={USER_MENU.name}
-                      />
+                      <AvatarImage src={USER_AVATAR_SRC} alt={USER_MENU.name} />
                       <AvatarFallback className='rounded-lg text-xs'>
                         {USER_MENU.initials}
                       </AvatarFallback>

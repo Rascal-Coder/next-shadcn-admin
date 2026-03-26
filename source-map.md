@@ -6,15 +6,15 @@
 
 ## 1. 菜单管理（导航 / 侧边栏 / 命令面板）
 
-| 用途 | 路径 | 说明 |
-|------|------|------|
-| 菜单数据来源（单一真源） | `src/config/nav-config.ts` | `navItems` 数组；支持嵌套 `items`；可配置 `access`（见下文 RBAC） |
-| 侧栏消费菜单 | `src/components/layout/app-sidebar.tsx` | `useFilteredNavItems(navItems)`；品牌区、用户区展示也在此 |
-| Cmd+K 快捷跳转 | `src/components/kbar/index.tsx` | 同样基于 `navItems` + `useFilteredNavItems`，与侧栏保持同步 |
-| 导航项过滤钩子 | `src/hooks/use-nav.ts` | **当前为直通** `return items`；动态菜单 / 按角色隐藏应在此集中实现 |
-| 面包屑 / 路径标题 | `src/hooks/use-breadcrumbs.tsx` | 依赖 `navItems` 解析当前路径 |
-| 导航类型 | `src/types/index.ts` | `NavItem`、`PermissionCheck` |
-| 图标键名 | `src/components/icons.tsx` | `NavItem.icon` 对应 `Icons` 的 key |
+| 用途                     | 路径                                    | 说明                                                               |
+| ------------------------ | --------------------------------------- | ------------------------------------------------------------------ |
+| 菜单数据来源（单一真源） | `src/config/nav-config.ts`              | `navItems` 数组；支持嵌套 `items`；可配置 `access`（见下文 RBAC）  |
+| 侧栏消费菜单             | `src/components/layout/app-sidebar.tsx` | `useFilteredNavItems(navItems)`；品牌区、用户区展示也在此          |
+| Cmd+K 快捷跳转           | `src/components/kbar/index.tsx`         | 同样基于 `navItems` + `useFilteredNavItems`，与侧栏保持同步        |
+| 导航项过滤钩子           | `src/hooks/use-nav.ts`                  | **当前为直通** `return items`；动态菜单 / 按角色隐藏应在此集中实现 |
+| 面包屑 / 路径标题        | `src/hooks/use-breadcrumbs.tsx`         | 依赖 `navItems` 解析当前路径                                       |
+| 导航类型                 | `src/types/index.ts`                    | `NavItem`、`PermissionCheck`                                       |
+| 图标键名                 | `src/components/icons.tsx`              | `NavItem.icon` 对应 `Icons` 的 key                                 |
 
 **后续做「菜单管理」（后台可配置菜单）时的建议：**
 
@@ -25,15 +25,15 @@
 
 ## 2. 用户管理
 
-| 用途 | 路径 | 说明 |
-|------|------|------|
-| 登录 UI | `src/features/auth/components/sign-in-view.tsx` | 演示：提交后写 Cookie 并跳转控制台 |
-| 注册 UI | `src/features/auth/components/sign-up-view.tsx` | 同上模式 |
-| 演示会话（客户端） | `src/lib/demo-auth-client.ts` | `setDemoSessionCookie` / `clearDemoSessionCookie` |
-| 演示会话常量 | `src/lib/demo-auth.ts` | `DEMO_SESSION_COOKIE` 名称 |
-| 侧栏展示的用户信息 | `src/components/layout/app-sidebar.tsx` | 当前为常量 `USER_MENU`（姓名、邮箱、头像路径），非真实用户源 |
-| 头部用户区占位 | `src/components/layout/user-nav.tsx` | **当前 `return null`**，可在此接真实用户菜单 |
-| 组织切换（Clerk API） | `src/components/org-switcher.tsx` | 使用 `@clerk/nextjs`；若未安装依赖或未接 Clerk，需替换或移除 |
+| 用途                  | 路径                                            | 说明                                                         |
+| --------------------- | ----------------------------------------------- | ------------------------------------------------------------ |
+| 登录 UI               | `src/features/auth/components/sign-in-view.tsx` | 演示：提交后写 Cookie 并跳转控制台                           |
+| 注册 UI               | `src/features/auth/components/sign-up-view.tsx` | 同上模式                                                     |
+| 演示会话（客户端）    | `src/lib/demo-auth-client.ts`                   | `setDemoSessionCookie` / `clearDemoSessionCookie`            |
+| 演示会话常量          | `src/lib/demo-auth.ts`                          | `DEMO_SESSION_COOKIE` 名称                                   |
+| 侧栏展示的用户信息    | `src/components/layout/app-sidebar.tsx`         | 当前为常量 `USER_MENU`（姓名、邮箱、头像路径），非真实用户源 |
+| 头部用户区占位        | `src/components/layout/user-nav.tsx`            | **当前 `return null`**，可在此接真实用户菜单                 |
+| 组织切换（Clerk API） | `src/components/org-switcher.tsx`               | 使用 `@clerk/nextjs`；若未安装依赖或未接 Clerk，需替换或移除 |
 
 **说明：** 当前模板以**演示 Cookie 登录**为主，无完整用户 CRUD。后续用户管理（列表、编辑、禁用等）建议：
 
@@ -44,12 +44,12 @@
 
 ## 3. 角色管理与 RBAC
 
-| 用途 | 路径 | 说明 |
-|------|------|------|
-| 权限字段类型 | `src/types/index.ts` | `PermissionCheck`：`permission`、`role`、`plan`、`feature`、`requireOrg` |
-| 菜单项上的 access | `src/config/nav-config.ts` | 注释中有示例；**当前 `navItems` 未使用 `access`** |
-| 侧栏 / kbar 过滤入口 | `src/hooks/use-nav.ts` | 应在此根据「当前用户角色 / 权限」过滤 `navItems` |
-| 设计说明 | `docs/nav-rbac.md` | **导航可见性仅为 UX**；真正鉴权必须在服务端（API、Server Actions、页面级） |
+| 用途                 | 路径                       | 说明                                                                       |
+| -------------------- | -------------------------- | -------------------------------------------------------------------------- |
+| 权限字段类型         | `src/types/index.ts`       | `PermissionCheck`：`permission`、`role`、`plan`、`feature`、`requireOrg`   |
+| 菜单项上的 access    | `src/config/nav-config.ts` | 注释中有示例；**当前 `navItems` 未使用 `access`**                          |
+| 侧栏 / kbar 过滤入口 | `src/hooks/use-nav.ts`     | 应在此根据「当前用户角色 / 权限」过滤 `navItems`                           |
+| 设计说明             | `docs/nav-rbac.md`         | **导航可见性仅为 UX**；真正鉴权必须在服务端（API、Server Actions、页面级） |
 
 **后续做「角色管理」时：**
 
@@ -61,8 +61,8 @@
 
 ## 4. 国际化（i18n）
 
-| 状态 | 说明 |
-|------|------|
+| 状态     | 说明                                                        |
+| -------- | ----------------------------------------------------------- |
 | 当前仓库 | **未集成** `next-intl` 等库；文案多为组件内硬编码英文字符串 |
 
 **推荐集成方向（App Router）：**
@@ -78,23 +78,23 @@
 
 ## 5. 布局与入口速查
 
-| 用途 | 路径 |
-|------|------|
-| 控制台根布局（侧栏 + Header + KBar） | `src/app/dashboard/layout.tsx` |
-| 各业务页面 | `src/app/dashboard/<segment>/page.tsx` |
-| 功能模块 UI | `src/features/<name>/components/` |
-| 全局样式与主题 | `src/styles/globals.css`、`src/styles/theme.css`、`src/components/themes/` |
+| 用途                                 | 路径                                                                       |
+| ------------------------------------ | -------------------------------------------------------------------------- |
+| 控制台根布局（侧栏 + Header + KBar） | `src/app/dashboard/layout.tsx`                                             |
+| 各业务页面                           | `src/app/dashboard/<segment>/page.tsx`                                     |
+| 功能模块 UI                          | `src/features/<name>/components/`                                          |
+| 全局样式与主题                       | `src/styles/globals.css`、`src/styles/theme.css`、`src/components/themes/` |
 
 ---
 
 ## 6. 文档与规范
 
-| 文档 | 内容 |
-|------|------|
-| `AGENTS.md` | 命令、目录约定、nav、RBAC 字段表、主题 |
-| `docs/nav-rbac.md` | 导航 RBAC 架构与客户端过滤说明 |
+| 文档                                    | 内容                                     |
+| --------------------------------------- | ---------------------------------------- |
+| `AGENTS.md`                             | 命令、目录约定、nav、RBAC 字段表、主题   |
+| `docs/nav-rbac.md`                      | 导航 RBAC 架构与客户端过滤说明           |
 | `.agents/skills/dashboard-dev/SKILL.md` | 从零加页面、feature、nav、表格的逐步模板 |
 
 ---
 
-*上次更新：依当前仓库结构整理；你在完成菜单后台、用户模块、角色服务或 i18n 路由后，可在此文件追加「实际 API / 表结构 / 环境变量」链接，方便团队同步。*
+_上次更新：依当前仓库结构整理；你在完成菜单后台、用户模块、角色服务或 i18n 路由后，可在此文件追加「实际 API / 表结构 / 环境变量」链接，方便团队同步。_
