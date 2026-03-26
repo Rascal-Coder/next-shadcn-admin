@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import { faker } from '@faker-js/faker';
+import type { User } from '@/constants/data';
 import { matchSorter } from 'match-sorter'; // For filtering
 
 export const delay = (ms: number) =>
@@ -153,5 +154,82 @@ export const fakeProducts = {
   }
 };
 
+export const fakeUsers = {
+  records: [] as User[],
+
+  initialize() {
+    const sampleUsers: User[] = [];
+    const rolePool: User['role'][] = ['admin', 'editor', 'user'];
+    const statusPool: User['status'][] = ['active', 'inactive'];
+
+    for (let i = 1; i <= 35; i++) {
+      sampleUsers.push({
+        id: i,
+        name: faker.person.fullName(),
+        email: faker.internet.email(),
+        role: faker.helpers.arrayElement(rolePool),
+        status: faker.helpers.arrayElement(statusPool),
+        created_at: faker.date
+          .between({ from: '2022-01-01', to: '2025-12-31' })
+          .toISOString()
+      });
+    }
+
+    this.records = sampleUsers;
+  },
+
+  async getAll({ roles = [], search }: { roles?: string[]; search?: string }) {
+    let users = [...this.records];
+
+    if (roles.length > 0) {
+      users = users.filter((user) => roles.includes(user.role));
+    }
+
+    if (search) {
+      users = matchSorter(users, search, {
+        keys: ['name', 'email']
+      });
+    }
+
+    return users;
+  },
+
+  async getUsers({
+    page = 1,
+    limit = 10,
+    roles,
+    search
+  }: {
+    page?: number;
+    limit?: number;
+    roles?: string;
+    search?: string;
+  }) {
+    await delay(1000);
+    const rolesArray = roles ? roles.split('.') : [];
+    const allUsers = await this.getAll({
+      roles: rolesArray,
+      search
+    });
+    const totalUsers = allUsers.length;
+
+    const offset = (page - 1) * limit;
+    const paginatedUsers = allUsers.slice(offset, offset + limit);
+
+    const currentTime = new Date().toISOString();
+
+    return {
+      success: true,
+      time: currentTime,
+      message: 'Sample data for testing and learning purposes',
+      total_users: totalUsers,
+      offset,
+      limit,
+      users: paginatedUsers
+    };
+  }
+};
+
 // Initialize sample products
 fakeProducts.initialize();
+fakeUsers.initialize();

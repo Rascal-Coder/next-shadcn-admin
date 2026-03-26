@@ -9,6 +9,15 @@ export type Product = {
   updated_at: string;
 };
 
+export type User = {
+  id: number;
+  name: string;
+  email: string;
+  role: 'admin' | 'editor' | 'user';
+  status: 'active' | 'inactive';
+  created_at: string;
+};
+
 export interface SaleUser {
   id: number;
   name: string;

@@ -11,6 +11,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
+import { persistAuthFromLoginData } from '@/lib/auth-storage';
 import { isSuccess } from '@/lib/response-code';
 import { cn } from '@/lib/utils';
 import { authControllerLogin } from '@/services/api/auth';
@@ -18,6 +19,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import * as z from 'zod';
 import { InteractiveGridPattern } from './interactive-grid';
 
@@ -45,6 +47,11 @@ export default function SignInViewPage() {
         password: values.password
       });
       if (!isSuccess(res.code)) {
+        return;
+      }
+      // 与注册页一致：将 accessToken 写入 localStorage，后续请求拦截器才能带上 Authorization
+      if (!persistAuthFromLoginData(res.data)) {
+        toast.error('登录成功但未返回有效令牌，请重试');
         return;
       }
       router.push('/dashboard/overview');

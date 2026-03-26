@@ -5,6 +5,12 @@ declare namespace API {
     accessToken: string;
   };
 
+  type CreateUserDto = {
+    email: string;
+    password: string;
+    name?: string;
+  };
+
   type HealthDataDto = {
     status: string;
   };
@@ -30,6 +36,35 @@ declare namespace API {
     email: string;
     password: string;
     name?: string;
+  };
+
+  type UpdateUserDto = {
+    email?: string;
+    password?: string;
+    name?: string;
+  };
+
+  type UserControllerFindOneParams = {
+    id: string;
+  };
+
+  type UserControllerListParams = {
+    page?: number;
+    pageSize?: number;
+  };
+
+  type UserControllerRemoveParams = {
+    id: string;
+  };
+
+  type UserControllerUpdateParams = {
+    id: string;
+  };
+
+  type UserListDataDto = {
+    items: UserProfileDto[];
+    /** 符合条件的总条数 */
+    total: number;
   };
 
   type UserProfileDto = {

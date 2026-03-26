@@ -59,6 +59,29 @@ export const navItems: NavItem[] = [
     items: []
   },
   {
+    title: '系统管理',
+    url: '#',
+    icon: 'settings',
+    isActive: false,
+    items: [
+      {
+        title: '用户',
+        url: '/dashboard/system/account',
+        shortcut: ['s', 'u']
+      },
+      {
+        title: '菜单',
+        url: '/dashboard/system/menu',
+        shortcut: ['s', 'm']
+      },
+      {
+        title: '角色',
+        url: '/dashboard/system/role',
+        shortcut: ['s', 'r']
+      }
+    ]
+  },
+  {
     title: 'Account',
     url: '#', // Placeholder as there is no direct link for the parent
     icon: 'account',
