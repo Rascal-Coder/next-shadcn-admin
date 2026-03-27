@@ -137,9 +137,9 @@ export function buildParentMenuOptions(
   if (excludeRootId) {
     const node = findMenuNodeById(nodes, excludeRootId);
     if (node) {
-      for (const id of collectDescendantIds(node)) {
+      collectDescendantIds(node).forEach((id) => {
         exclude.add(id);
-      }
+      });
     }
   }
   const opts: FormOption[] = [
