@@ -3,57 +3,35 @@
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { isSuccess } from '@/lib/response-code';
-import { userControllerList, userControllerMe } from '@/services/api/users';
+import { roleControllerList } from '@/services/api/roles';
 import axios from 'axios';
 import { AlertCircle } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { parseAsInteger, useQueryState } from 'nuqs';
-import type { UserListRow } from '../types';
-import { UserTable } from './user-tables';
-import { getUserColumns } from './user-tables/columns';
-import { useUserListRefresh } from './user-list-refresh-context';
+import type { RoleListRow } from '@/features/roles/types';
+import { RoleTable } from '@/features/roles/components/role-tables';
+import { getRoleColumns } from '@/features/roles/components/role-tables/columns';
+import { useRoleListRefresh } from '@/features/roles/components/role-list-refresh-context';
 
-/** 解析 openapi 请求返回的统一响应体中的 data */
 function unwrapListPayload(
   raw: unknown
-): { items: UserListRow[]; total: number } | null {
+): { items: RoleListRow[]; total: number } | null {
   if (!raw || typeof raw !== 'object') return null;
-  const data = (raw as { data?: API.UserListDataDto }).data;
+  const data = (raw as { data?: API.RoleListDataDto }).data;
   if (!data?.items || typeof data.total !== 'number') return null;
   return { items: data.items, total: data.total };
 }
 
-export default function UserListingPage() {
-  const { setRefresh } = useUserListRefresh();
+export default function RoleListingPage() {
+  const { setRefresh } = useRoleListRefresh();
   const [page] = useQueryState('page', parseAsInteger.withDefault(1));
   const [perPage] = useQueryState('perPage', parseAsInteger.withDefault(10));
 
-  const [rows, setRows] = useState<UserListRow[]>([]);
+  const [rows, setRows] = useState<RoleListRow[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  /** 当前登录用户 id，用于禁止在列表中编辑/重置自己 */
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await userControllerMe({ skipErrorHandler: true });
-        const body = res as { code?: number; data?: API.UserProfileDto };
-        if (!cancelled && isSuccess(body.code) && body.data?.id) {
-          setCurrentUserId(body.data.id);
-        }
-      } catch {
-        // 列表仍可用；无法识别「自己」时不在此拦截操作
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const load = useCallback(async () => {
     abortRef.current?.abort();
@@ -63,7 +41,7 @@ export default function UserListingPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await userControllerList(
+      const res = await roleControllerList(
         { page, pageSize: perPage },
         { signal: controller.signal, skipErrorHandler: true }
       );
@@ -82,7 +60,7 @@ export default function UserListingPage() {
       if (controller.signal.aborted) return;
       setRows([]);
       setTotalItems(0);
-      setError(e instanceof Error ? e.message : '加载用户列表失败，请稍后重试');
+      setError(e instanceof Error ? e.message : '加载角色列表失败，请稍后重试');
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
@@ -116,7 +94,7 @@ export default function UserListingPage() {
     return (
       <Alert variant='destructive'>
         <AlertCircle className='size-4' />
-        <AlertTitle>无法加载用户列表</AlertTitle>
+        <AlertTitle>无法加载角色列表</AlertTitle>
         <AlertDescription className='flex flex-col gap-3 sm:flex-row sm:items-center'>
           <span>{error}</span>
           <Button
@@ -133,10 +111,10 @@ export default function UserListingPage() {
   }
 
   return (
-    <UserTable<UserListRow, unknown>
+    <RoleTable<RoleListRow, unknown>
       data={rows}
       totalItems={totalItems}
-      columns={getUserColumns(load, currentUserId)}
+      columns={getRoleColumns(load)}
     />
   );
 }

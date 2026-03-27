@@ -8,17 +8,17 @@ import { useDataTable } from '@/hooks/use-data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, useQueryState } from 'nuqs';
 
-interface UserTableParams<TData, TValue> {
+interface RoleTableParams<TData, TValue> {
   data: TData[];
   totalItems: number;
   columns: ColumnDef<TData, TValue>[];
 }
 
-export function UserTable<TData, TValue>({
+export function RoleTable<TData, TValue>({
   data,
   totalItems,
   columns
-}: UserTableParams<TData, TValue>) {
+}: RoleTableParams<TData, TValue>) {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
 
   const pageCount = Math.ceil(totalItems / pageSize);

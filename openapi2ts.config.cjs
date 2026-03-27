@@ -5,6 +5,9 @@
  * 1. 在后端用 Swagger/OpenAPI 定义 DTO、响应体（含登录 data 结构）。
  * 2. 启动后端后执行：`bun run openapi2ts`（或先 `schemaPath` 指向导出的 `openapi.json`）。
  * 3. 会覆盖/更新 `src/services` 下生成文件；自定义手写类型请放在不会被覆盖的文件，或生成后再合并。
+ * 4. 若某字段运行时为对象但 Swagger 仍标成 string（如菜单树 permission），勿手改 typings.d.ts，
+ *    在业务侧用扩展类型（例如 `src/features/roles/types/menu-tree-node.ts` 的 MenuTreeNodeView），
+ *    长期应在后端 OpenAPI 用 oneOf / $ref 与实体对齐后再生成。
  *
  */
 /** @type {import('@umijs/openapi').GenerateServiceProps} */

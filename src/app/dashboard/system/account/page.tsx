@@ -1,6 +1,8 @@
 import PageContainer from '@/components/layout/page-container';
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
+import { UserCreateHeaderButton } from '@/features/users/components/user-create-modal';
 import UserListingPage from '@/features/users/components/user-listing';
+import { UserListRefreshProvider } from '@/features/users/components/user-list-refresh-context';
 import { searchParamsCache } from '@/lib/searchparams';
 import { SearchParams } from 'nuqs/server';
 import { Suspense } from 'react';
@@ -18,18 +20,21 @@ export default async function Page(props: pageProps) {
   searchParamsCache.parse(searchParams);
 
   return (
-    <PageContainer
-      scrollable={false}
-      pageTitle='用户管理'
-      pageDescription='管理系统用户（GET /api/users）'
-    >
-      <Suspense
-        fallback={
-          <DataTableSkeleton columnCount={5} rowCount={8} filterCount={1} />
-        }
+    <UserListRefreshProvider>
+      <PageContainer
+        scrollable={false}
+        pageTitle='用户管理'
+        pageDescription='管理系统用户：列表、新建、编辑与删除'
+        pageHeaderAction={<UserCreateHeaderButton />}
       >
-        <UserListingPage />
-      </Suspense>
-    </PageContainer>
+        <Suspense
+          fallback={
+            <DataTableSkeleton columnCount={8} rowCount={8} filterCount={0} />
+          }
+        >
+          <UserListingPage />
+        </Suspense>
+      </PageContainer>
+    </UserListRefreshProvider>
   );
 }
