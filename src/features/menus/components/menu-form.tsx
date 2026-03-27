@@ -38,7 +38,7 @@ import { roleControllerPermissionCatalog } from '@/services/api/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
@@ -57,7 +57,7 @@ const schema = z.object({
   component: z.string().max(500, '内容过长').optional(),
   /** 用于子路由高亮父级菜单等场景 */
   activePath: z.string().max(500, '内容过长').optional(),
-  sortOrder: z.coerce.number().int().min(0, '排序不能为负'),
+  sortOrder: z.number().int().min(0, '排序不能为负').default(0),
   visible: z.boolean(),
   menuType: z.enum(['DIRECTORY', 'MENU', 'BUTTON']),
   /** 绑定 Casbin 权限字典项；目录可不绑定 */
@@ -121,7 +121,7 @@ export function MenuForm({
   );
 
   const form = useForm<MenuFormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<MenuFormValues>,
     defaultValues: {
       parentId: defaultParentId?.trim()
         ? defaultParentId!
@@ -289,7 +289,7 @@ export function MenuForm({
   }
 
   return (
-    <Form
+    <Form<MenuFormValues>
       form={form}
       onSubmit={form.handleSubmit(onSubmit)}
       className='space-y-4'
