@@ -1,5 +1,6 @@
 import SignInViewPage from '@/features/auth/components/sign-in-view';
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Authentication | Sign In',
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <SignInViewPage />;
+  return (
+    <Suspense fallback={null}>
+      <SignInViewPage />
+    </Suspense>
+  );
 }

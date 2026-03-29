@@ -14,8 +14,6 @@ declare namespace API {
     path?: string;
     /** 激活路径（用于子路由高亮父级菜单等场景） */
     activePath?: string;
-    /** 前端组件路径等 */
-    component?: string;
     /** 绑定的权限 id（目录可为空） */
     permissionId?: string;
     /** 排序，默认 0 */
@@ -79,7 +77,6 @@ declare namespace API {
     path?: string;
     /** 激活路径（用于子路由高亮父级菜单等场景） */
     activePath?: string;
-    component?: string;
     menuType: 'DIRECTORY' | 'MENU' | 'BUTTON';
     sortOrder: number;
     visible: boolean;
@@ -101,7 +98,6 @@ declare namespace API {
     path?: string;
     /** 激活路径（用于子路由高亮父级菜单等场景） */
     activePath?: string;
-    component?: string;
     menuType: 'DIRECTORY' | 'MENU' | 'BUTTON';
     sortOrder: number;
     visible: boolean;
@@ -204,7 +200,6 @@ declare namespace API {
     path?: string;
     /** 激活路径 */
     activePath?: string;
-    component?: string;
     permissionId?: string;
     sortOrder?: number;
     menuType?: 'DIRECTORY' | 'MENU' | 'BUTTON';

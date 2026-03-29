@@ -1,5 +1,7 @@
 import KBar from '@/components/kbar';
 import AppSidebar from '@/components/layout/app-sidebar';
+import { DashboardMenuProvider } from '@/components/layout/dashboard-menu-provider';
+import { DashboardRouteGuard } from '@/components/layout/dashboard-route-guard';
 import Header from '@/components/layout/header';
 import { InfoSidebar } from '@/components/layout/info-sidebar';
 import { InfobarProvider } from '@/components/ui/infobar';
@@ -25,19 +27,19 @@ export default async function DashboardLayout({
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get('sidebar_state')?.value === 'true';
   return (
-    <KBar>
-      <SidebarProvider defaultOpen={defaultOpen}>
-        <InfobarProvider defaultOpen={false}>
-          <AppSidebar />
-          <SidebarInset>
-            <Header />
-            {/* page main content */}
-            {children}
-            {/* page main content ends */}
-          </SidebarInset>
-          <InfoSidebar side='right' />
-        </InfobarProvider>
-      </SidebarProvider>
-    </KBar>
+    <DashboardMenuProvider>
+      <KBar>
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <InfobarProvider defaultOpen={false}>
+            <AppSidebar />
+            <SidebarInset>
+              <Header />
+              <DashboardRouteGuard>{children}</DashboardRouteGuard>
+            </SidebarInset>
+            <InfoSidebar side='right' />
+          </InfobarProvider>
+        </SidebarProvider>
+      </KBar>
+    </DashboardMenuProvider>
   );
 }

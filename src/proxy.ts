@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function proxy(_req: NextRequest) {
+import { AUTH_ACCESS_TOKEN_KEY } from '@/lib/auth-constants';
+
+export function proxy(request: NextRequest): NextResponse {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith('/dashboard')) {
+    const token = request.cookies.get(AUTH_ACCESS_TOKEN_KEY)?.value?.trim();
+    if (!token) {
+      const signIn = new URL('/auth/sign-in', request.url);
+      signIn.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(signIn);
+    }
+  }
   return NextResponse.next();
 }
 

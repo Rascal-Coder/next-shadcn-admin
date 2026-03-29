@@ -14,13 +14,10 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
+  DataGrid,
+  DataGridContainer
+} from '@/components/ui/data-grid/data-grid';
+import { DataGridTable } from '@/components/ui/data-grid/data-grid-table';
 import { MenuManageModal } from '@/features/menus/components/menu-manage-modal';
 import {
   filterMenuTreeBySearch,
@@ -35,7 +32,6 @@ import { menuControllerRemove, menuControllerTree } from '@/services/api/menus';
 import {
   ColumnDef,
   ExpandedState,
-  flexRender,
   getCoreRowModel,
   getExpandedRowModel,
   useReactTable
@@ -159,6 +155,10 @@ export default function MenuListingPage() {
       {
         id: 'name',
         header: '菜单名称',
+        meta: {
+          headerClassName: 'min-w-[200px]',
+          cellClassName: 'min-w-0 max-w-[min(100vw,36rem)]'
+        },
         cell: ({ row }) => {
           const node = row.original;
           const canExpand = row.getCanExpand();
@@ -197,6 +197,10 @@ export default function MenuListingPage() {
       {
         id: 'icon',
         header: '图标',
+        meta: {
+          headerClassName: 'w-[120px]',
+          cellClassName: 'w-[120px]'
+        },
         cell: ({ row }) => {
           const node = row.original;
           return (
@@ -212,6 +216,10 @@ export default function MenuListingPage() {
       {
         id: 'path',
         header: '路由',
+        meta: {
+          headerClassName: 'min-w-[120px]',
+          cellClassName: 'min-w-0 max-w-[200px]'
+        },
         cell: ({ row }) => (
           <span className='max-w-[200px] truncate font-mono text-xs'>
             {row.original.path ?? '—'}
@@ -221,6 +229,10 @@ export default function MenuListingPage() {
       {
         id: 'activePath',
         header: '激活路径',
+        meta: {
+          headerClassName: 'min-w-[120px]',
+          cellClassName: 'min-w-0 max-w-[200px]'
+        },
         cell: ({ row }) => {
           const v = row.original.activePath?.trim();
           return (
@@ -233,6 +245,10 @@ export default function MenuListingPage() {
       {
         id: 'component',
         header: '组件',
+        meta: {
+          headerClassName: 'max-w-[140px] min-w-[100px]',
+          cellClassName: 'min-w-0 max-w-[140px]'
+        },
         cell: ({ row }) => {
           const node = row.original;
           const v = node.component?.trim();
@@ -249,6 +265,7 @@ export default function MenuListingPage() {
       {
         id: 'menuType',
         header: '类型',
+        meta: { headerClassName: 'whitespace-nowrap' },
         cell: ({ row }) => (
           <Badge variant='outline'>
             {menuTypeLabel[row.original.menuType]}
@@ -258,11 +275,19 @@ export default function MenuListingPage() {
       {
         id: 'sortOrder',
         header: '排序',
+        meta: {
+          headerClassName: 'w-[72px]',
+          cellClassName: 'w-[72px]'
+        },
         cell: ({ row }) => row.original.sortOrder
       },
       {
         id: 'visible',
         header: '显示',
+        meta: {
+          headerClassName: 'w-[88px]',
+          cellClassName: 'w-[88px]'
+        },
         cell: ({ row }) =>
           row.original.visible ? (
             <Badge>是</Badge>
@@ -273,6 +298,10 @@ export default function MenuListingPage() {
       {
         id: 'permission',
         header: '权限',
+        meta: {
+          headerClassName: 'min-w-[100px]',
+          cellClassName: 'min-w-0 max-w-[140px]'
+        },
         cell: ({ row }) => {
           const code = row.original.permission?.code?.trim();
           return (
@@ -288,6 +317,10 @@ export default function MenuListingPage() {
       {
         id: 'actions',
         header: () => <span className='sr-only'>操作</span>,
+        meta: {
+          headerClassName: 'w-[56px]',
+          cellClassName: 'w-[56px]'
+        },
         cell: ({ row }) => {
           const node = row.original;
           return (
@@ -334,6 +367,7 @@ export default function MenuListingPage() {
     state: { expanded },
     onExpandedChange: setExpanded,
     getRowId: (row) => row.id,
+    getSubRows: (row) => row.subRows,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel()
   });
@@ -395,7 +429,9 @@ export default function MenuListingPage() {
 
   const rowModel = table.getRowModel();
   const hasTree = tree.length > 0;
-  const hasFilteredRows = rowModel.rows.length > 0;
+  const emptyMessage = !hasTree
+    ? '暂无菜单，点击「新增菜单」开始配置。'
+    : '没有匹配的菜单，请调整搜索关键词。';
 
   return (
     <>
@@ -473,84 +509,29 @@ export default function MenuListingPage() {
         </div>
       </Modal>
 
-      <div className='rounded-md border'>
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    colSpan={header.colSpan}
-                    className={
-                      header.column.id === 'name'
-                        ? 'min-w-[200px]'
-                        : header.column.id === 'icon'
-                          ? 'w-[120px]'
-                          : header.column.id === 'component'
-                            ? 'max-w-[140px] min-w-[100px]'
-                            : header.column.id === 'sortOrder'
-                              ? 'w-[72px]'
-                              : header.column.id === 'visible'
-                                ? 'w-[88px]'
-                                : header.column.id === 'permission'
-                                  ? 'min-w-[100px]'
-                                  : header.column.id === 'actions'
-                                    ? 'w-[56px]'
-                                    : undefined
-                    }
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {!hasTree ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='text-muted-foreground h-24 text-center'
-                >
-                  暂无菜单，点击「新增菜单」开始配置。
-                </TableCell>
-              </TableRow>
-            ) : !hasFilteredRows ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='text-muted-foreground h-24 text-center'
-                >
-                  没有匹配的菜单，请调整搜索关键词。
-                </TableCell>
-              </TableRow>
-            ) : (
-              rowModel.rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-depth={row.depth}
-                  data-state={row.getIsExpanded() && 'expanded'}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <DataGridContainer className='bg-card gap-0 overflow-hidden shadow-xs'>
+        <DataGrid
+          table={table}
+          recordCount={rowModel.rows.length}
+          emptyMessage={emptyMessage}
+          tableLayout={{
+            width: 'auto',
+            rowBorder: true,
+            headerBackground: true,
+            headerBorder: true,
+            headerSticky: false
+          }}
+          tableClassNames={{
+            base: 'text-sm',
+            body: 'bg-card',
+            bodyRow: 'bg-card'
+          }}
+        >
+          <div className='bg-card overflow-x-auto'>
+            <DataGridTable />
+          </div>
+        </DataGrid>
+      </DataGridContainer>
     </>
   );
 }

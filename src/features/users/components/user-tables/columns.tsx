@@ -1,8 +1,9 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
+import { DataGridColumnHeader } from '@/components/ui/data-grid/data-grid-column-header';
 import type { UserListRow } from '@/features/users/types';
+import { cn } from '@/lib/utils';
 import { IconCopy } from '@tabler/icons-react';
 import { Column, ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
@@ -33,8 +34,9 @@ export function getUserColumns(
   return [
     {
       id: 'serial',
+      meta: { headerTitle: '序号' },
       header: ({ column }: { column: Column<UserListRow, unknown> }) => (
-        <DataTableColumnHeader column={column} title='序号' />
+        <DataGridColumnHeader column={column} title='序号' />
       ),
       cell: ({ row, table }) => {
         const { pageIndex, pageSize } = table.getState().pagination;
@@ -53,15 +55,21 @@ export function getUserColumns(
     },
     {
       accessorKey: 'name',
+      meta: { headerTitle: '姓名' },
       header: ({ column }: { column: Column<UserListRow, unknown> }) => (
-        <DataTableColumnHeader column={column} title='姓名' />
+        <DataGridColumnHeader column={column} title='姓名' />
       ),
-      cell: ({ cell }) => <div>{cell.getValue<string>()}</div>
+      cell: ({ cell }) => (
+        <span className='text-foreground text-sm font-medium'>
+          {cell.getValue<string>()}
+        </span>
+      )
     },
     {
       accessorKey: 'roleCode',
+      meta: { headerTitle: '主角色' },
       header: ({ column }: { column: Column<UserListRow, unknown> }) => (
-        <DataTableColumnHeader column={column} title='主角色' />
+        <DataGridColumnHeader column={column} title='主角色' />
       ),
       cell: ({ cell }) => (
         <Badge variant='outline' className='font-mono text-xs'>
@@ -71,28 +79,39 @@ export function getUserColumns(
     },
     {
       accessorKey: 'status',
+      meta: { headerTitle: '状态' },
       header: ({ column }: { column: Column<UserListRow, unknown> }) => (
-        <DataTableColumnHeader column={column} title='状态' />
+        <DataGridColumnHeader column={column} title='状态' />
       ),
       cell: ({ cell }) => {
         const s = cell.getValue<UserListRow['status']>();
+        const active = s === 'ACTIVE';
         return (
-          <Badge variant={s === 'ACTIVE' ? 'default' : 'secondary'}>
-            {s === 'ACTIVE' ? '正常' : '停用'}
+          <Badge
+            variant='outline'
+            className={cn(
+              'font-medium',
+              active
+                ? 'border-primary/30 bg-primary/10 text-primary shadow-none'
+                : 'text-muted-foreground'
+            )}
+          >
+            {active ? '正常' : '停用'}
           </Badge>
         );
       }
     },
     {
       accessorKey: 'email',
+      meta: { headerTitle: '邮箱' },
       header: ({ column }: { column: Column<UserListRow, unknown> }) => (
-        <DataTableColumnHeader column={column} title='邮箱' />
+        <DataGridColumnHeader column={column} title='邮箱' />
       ),
       cell: ({ row }) => {
         const email = row.original.email;
         return (
           <div
-            className='border-border bg-muted/50 text-muted-foreground inline-flex max-w-[min(320px,40vw)] items-center gap-1 rounded-full border py-1 pr-1 pl-3'
+            className='border-border bg-muted/40 text-muted-foreground inline-flex max-w-[min(320px,40vw)] items-center gap-1 rounded-full border py-1 pr-1 pl-3 shadow-none'
             title={email}
           >
             <span className='min-w-0 flex-1 truncate font-mono text-xs leading-none'>
@@ -113,25 +132,28 @@ export function getUserColumns(
     },
     {
       accessorKey: 'remark',
+      meta: {
+        headerTitle: '备注',
+        cellClassName: 'whitespace-normal align-top'
+      },
       header: ({ column }: { column: Column<UserListRow, unknown> }) => (
-        <DataTableColumnHeader column={column} title='备注' />
+        <DataGridColumnHeader column={column} title='备注' />
       ),
       cell: ({ row }) => {
         const v = row.original.remark?.trim();
         if (!v) {
           return (
-            <Badge
-              variant='outline'
-              className='text-muted-foreground border-dashed font-normal'
+            <span
+              className='text-muted-foreground bg-muted/30 border-border inline-flex max-w-[min(300px,38vw)] items-center rounded-full border px-3 py-1 text-xs'
               aria-label='暂无备注'
             >
               暂无备注
-            </Badge>
+            </span>
           );
         }
         return (
           <div
-            className='border-border/80 bg-muted/35 border-l-primary/35 max-w-[min(300px,38vw)] rounded-md border border-l-[3px] px-2.5 py-1.5 shadow-xs'
+            className='border-border bg-muted/25 max-w-[min(300px,38vw)] rounded-lg border px-2.5 py-1.5'
             title={v}
           >
             <p className='text-foreground/90 line-clamp-2 text-sm leading-relaxed wrap-break-word'>
@@ -143,8 +165,9 @@ export function getUserColumns(
     },
     {
       accessorKey: 'createdAt',
+      meta: { headerTitle: '创建时间' },
       header: ({ column }: { column: Column<UserListRow, unknown> }) => (
-        <DataTableColumnHeader column={column} title='创建时间' />
+        <DataGridColumnHeader column={column} title='创建时间' />
       ),
       cell: ({ cell }) => (
         <span className='text-muted-foreground tabular-nums'>
@@ -154,8 +177,9 @@ export function getUserColumns(
     },
     {
       accessorKey: 'updatedAt',
+      meta: { headerTitle: '更新时间' },
       header: ({ column }: { column: Column<UserListRow, unknown> }) => (
-        <DataTableColumnHeader column={column} title='更新时间' />
+        <DataGridColumnHeader column={column} title='更新时间' />
       ),
       cell: ({ cell }) => (
         <span className='text-muted-foreground tabular-nums'>
@@ -165,6 +189,7 @@ export function getUserColumns(
     },
     {
       id: 'actions',
+      enableHiding: false,
       cell: ({ row }) => (
         <CellAction
           data={row.original}

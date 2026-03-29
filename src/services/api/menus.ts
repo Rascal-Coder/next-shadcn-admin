@@ -2,6 +2,22 @@
 /* eslint-disable */
 import request from '@/lib/openapi-request';
 
+/** 菜单树（列表） 用于菜单管理及角色表单的「菜单权限」勾选；节点可挂 permission，保存角色时据此汇总 Casbin 所需权限。 GET /api/menus */
+export async function menuControllerList(
+  options?: import('@/lib/request').HttpRequestConfig
+) {
+  return request<{
+    success: boolean;
+    code: number;
+    message: string;
+    data: API.MenuTreeDataDto;
+    requestId: string;
+  }>('/api/menus', {
+    method: 'GET',
+    ...(options || {})
+  });
+}
+
 /** 创建菜单 POST /api/menus */
 export async function menuControllerCreate(
   body: API.CreateMenuDto,
@@ -82,7 +98,7 @@ export async function menuControllerUpdate(
   });
 }
 
-/** 菜单树 用于菜单管理及角色表单的「菜单权限」勾选；节点可挂 permission，保存角色时据此汇总 Casbin 所需权限。 GET /api/menus/tree */
+/** 菜单树（/tree、/list 别名） 与 GET /menus 响应相同。 GET /api/menus/tree */
 export async function menuControllerTree(
   options?: import('@/lib/request').HttpRequestConfig
 ) {

@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { authControllerLogin } from '@/services/api/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
@@ -30,8 +30,16 @@ const signInSchema = z.object({
 
 type SignInFormValues = z.infer<typeof signInSchema>;
 
+function safePostLoginPath(raw: string | null): string {
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//')) {
+    return '/dashboard/overview';
+  }
+  return raw;
+}
+
 export default function SignInViewPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -54,7 +62,8 @@ export default function SignInViewPage() {
         toast.error('登录成功但未返回有效令牌，请重试');
         return;
       }
-      router.push('/dashboard/overview');
+      const nextPath = safePostLoginPath(searchParams.get('redirect'));
+      router.push(nextPath);
       router.refresh();
     } catch {
       // 网络层错误由 request 拦截器统一 Toast

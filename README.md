@@ -107,6 +107,11 @@ src/
 
 详见仓库根目录的 `env.example.txt`，按你的认证与后端服务逐项配置。
 
+| 变量 | 说明 |
+|------|------|
+| `NEXT_PUBLIC_API_URL` | **浏览器端**调用后端时的 API 根地址（传给 `axios` 的 `baseURL`）。例如本机后端在 `8000` 端口：`http://127.0.0.1:8000`（一般不要末尾 `/`，与生成接口里的 `/api/...` 路径拼接）。逻辑见 `src/lib/request.tsx`。此变量暴露给浏览器，勿填服务端密钥。 |
+| `API_URL` | （可选）**服务端**（RSC、Route Handler 等）请求同一后端时使用的基地址；未设置时会回退到 `NEXT_PUBLIC_API_URL`。 |
+
 ##### 认证
 
 按所选方案在 `src/app/auth`、`middleware` 与 Provider 中完成接入

@@ -1,5 +1,5 @@
 'use client';
-import { navItems } from '@/config/nav-config';
+import { useDashboardMenu } from '@/components/layout/dashboard-menu-provider';
 import {
   KBarAnimator,
   KBarPortal,
@@ -7,54 +7,70 @@ import {
   KBarProvider,
   KBarSearch
 } from 'kbar';
+import { navItems } from '@/config/nav-config';
+import { useFilteredNavItems } from '@/hooks/use-nav';
+import { collectKbarEntriesFromMenuTree } from '@/lib/menu-tree-nav';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import RenderResults from './render-result';
 import useThemeSwitching from './use-theme-switching';
-import { useFilteredNavItems } from '@/hooks/use-nav';
 
-export default function KBar({ children }: { children: React.ReactNode }) {
+function KBarInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const filteredItems = useFilteredNavItems(navItems);
+  const menuCtx = useDashboardMenu();
 
-  // These action are for the navigation
   const actions = useMemo(() => {
-    // Define navigateTo inside the useMemo callback to avoid dependency array issues
     const navigateTo = (url: string) => {
       router.push(url);
     };
 
-    return filteredItems.flatMap((navItem) => {
-      // Only include base action if the navItem has a real URL and is not just a container
-      const baseAction =
-        navItem.url !== '#'
-          ? {
-              id: `${navItem.title.toLowerCase()}Action`,
-              name: navItem.title,
-              shortcut: navItem.shortcut,
-              keywords: navItem.title.toLowerCase(),
-              section: 'Navigation',
-              subtitle: `Go to ${navItem.title}`,
-              perform: () => navigateTo(navItem.url)
-            }
-          : null;
+    if (!menuCtx.bootstrapped) {
+      return [];
+    }
 
-      // Map child items into actions
-      const childActions =
-        navItem.items?.map((childItem) => ({
-          id: `${childItem.title.toLowerCase()}Action`,
-          name: childItem.title,
-          shortcut: childItem.shortcut,
-          keywords: childItem.title.toLowerCase(),
-          section: navItem.title,
-          subtitle: `Go to ${childItem.title}`,
-          perform: () => navigateTo(childItem.url)
-        })) ?? [];
+    if (menuCtx.bypassMenuGuard && menuCtx.menuNodesForSidebar.length === 0) {
+      return filteredItems.flatMap((navItem) => {
+        const baseAction =
+          navItem.url !== '#'
+            ? {
+                id: `${navItem.title.toLowerCase()}Action`,
+                name: navItem.title,
+                shortcut: navItem.shortcut,
+                keywords: navItem.title.toLowerCase(),
+                section: 'Navigation',
+                subtitle: `Go to ${navItem.title}`,
+                perform: () => navigateTo(navItem.url)
+              }
+            : null;
 
-      // Return only valid actions (ignoring null base actions for containers)
-      return baseAction ? [baseAction, ...childActions] : childActions;
-    });
-  }, [router, filteredItems]);
+        const childActions =
+          navItem.items?.map((childItem) => ({
+            id: `${childItem.title.toLowerCase()}Action`,
+            name: childItem.title,
+            shortcut: childItem.shortcut,
+            keywords: childItem.title.toLowerCase(),
+            section: navItem.title,
+            subtitle: `Go to ${childItem.title}`,
+            perform: () => navigateTo(childItem.url)
+          })) ?? [];
+
+        return baseAction ? [baseAction, ...childActions] : childActions;
+      });
+    }
+
+    return collectKbarEntriesFromMenuTree(menuCtx.menuNodesForSidebar).map(
+      (e) => ({
+        id: e.id,
+        name: e.name,
+        shortcut: undefined,
+        keywords: e.name.toLowerCase(),
+        section: e.section,
+        subtitle: e.name,
+        perform: () => navigateTo(e.url)
+      })
+    );
+  }, [router, filteredItems, menuCtx]);
 
   return (
     <KBarProvider actions={actions}>
@@ -62,6 +78,11 @@ export default function KBar({ children }: { children: React.ReactNode }) {
     </KBarProvider>
   );
 }
+
+export default function KBar({ children }: { children: React.ReactNode }) {
+  return <KBarInner>{children}</KBarInner>;
+}
+
 const KBarComponent = ({ children }: { children: React.ReactNode }) => {
   useThemeSwitching();
 

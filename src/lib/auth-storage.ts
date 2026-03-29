@@ -1,7 +1,21 @@
 'use client';
 
-/** localStorage 中访问令牌的键名 */
-const ACCESS_TOKEN_KEY = 'auth_access_token';
+import { AUTH_ACCESS_TOKEN_KEY } from '@/lib/auth-constants';
+
+const ACCESS_TOKEN_KEY = AUTH_ACCESS_TOKEN_KEY;
+
+export { AUTH_ACCESS_TOKEN_KEY };
+
+const ACCESS_TOKEN_COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 7;
+
+function syncAccessTokenCookie(token: string | null): void {
+  if (typeof document === 'undefined') return;
+  if (token) {
+    document.cookie = `${ACCESS_TOKEN_KEY}=${encodeURIComponent(token)}; path=/; max-age=${ACCESS_TOKEN_COOKIE_MAX_AGE_SEC}; SameSite=Lax`;
+    return;
+  }
+  document.cookie = `${ACCESS_TOKEN_KEY}=; path=/; max-age=0`;
+}
 
 /**
  * 从登录/注册 data 中解析访问令牌。
@@ -31,6 +45,7 @@ export function persistAuthFromLoginData(
   if (typeof window === 'undefined') return false;
   try {
     localStorage.setItem(ACCESS_TOKEN_KEY, token);
+    syncAccessTokenCookie(token);
     return true;
   } catch {
     return false;
@@ -41,7 +56,14 @@ export function clearAuthStorage(): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
+    syncAccessTokenCookie(null);
   } catch {
     /* ignore */
   }
+}
+
+/** 将 localStorage 中的令牌同步到 Cookie（升级或无痕恢复会话时 middleware 可识别） */
+export function syncAuthCookieFromStorage(): void {
+  const token = getAccessToken();
+  syncAccessTokenCookie(token);
 }
