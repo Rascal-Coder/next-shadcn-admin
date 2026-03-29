@@ -28,7 +28,6 @@ function menuNodeMatchesSearch(node: MenuTreeNodeView, q: string): boolean {
     node.path,
     node.activePath,
     node.icon,
-    node.component,
     node.permission?.code,
     node.permission?.name
   ]

@@ -13,13 +13,13 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Settings2 } from 'lucide-react';
 import { parseAsInteger, useQueryState } from 'nuqs';
 
-interface UserTableParams<TData, TValue> {
+interface UserTableParams<TData extends object, TValue> {
   data: TData[];
   totalItems: number;
   columns: ColumnDef<TData, TValue>[];
 }
 
-export function UserTable<TData, TValue>({
+export function UserTable<TData extends object, TValue>({
   data,
   totalItems,
   columns
@@ -39,7 +39,7 @@ export function UserTable<TData, TValue>({
 
   return (
     <DataGridContainer className='bg-card gap-0 overflow-hidden shadow-xs'>
-      <DataGrid
+      <DataGrid<TData>
         table={table}
         recordCount={totalItems}
         emptyMessage='暂无用户'
@@ -56,7 +56,7 @@ export function UserTable<TData, TValue>({
         }}
       >
         <div className='bg-muted/30 border-border flex items-center justify-end border-b px-3 py-2.5'>
-          <DataGridColumnVisibility
+          <DataGridColumnVisibility<TData>
             table={table}
             trigger={
               <Button

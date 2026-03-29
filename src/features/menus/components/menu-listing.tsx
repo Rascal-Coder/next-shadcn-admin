@@ -243,26 +243,6 @@ export default function MenuListingPage() {
         }
       },
       {
-        id: 'component',
-        header: '组件',
-        meta: {
-          headerClassName: 'max-w-[140px] min-w-[100px]',
-          cellClassName: 'min-w-0 max-w-[140px]'
-        },
-        cell: ({ row }) => {
-          const node = row.original;
-          const v = node.component?.trim();
-          return (
-            <span
-              className='max-w-[140px] truncate font-mono text-xs'
-              title={node.component ?? undefined}
-            >
-              {v ? v : '—'}
-            </span>
-          );
-        }
-      },
-      {
         id: 'menuType',
         header: '类型',
         meta: { headerClassName: 'whitespace-nowrap' },
