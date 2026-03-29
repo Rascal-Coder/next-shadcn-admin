@@ -77,7 +77,7 @@ type MenuFormProps = {
 };
 
 function toPatchBody(values: MenuFormValues): API.UpdateMenuDto {
-  const component = values.component?.trim();
+  // const component = values.component?.trim();
   const activePath = values.activePath?.trim();
   const parentId = parentFieldToApi(values.parentId, 'edit');
   const pid = values.permissionId?.trim();
@@ -91,7 +91,7 @@ function toPatchBody(values: MenuFormValues): API.UpdateMenuDto {
     name: values.name.trim(),
     path: values.path.trim(),
     icon: values.icon.trim(),
-    component: component ? component : undefined,
+    // component: component ? component : undefined,
     activePath: activePath ? activePath : undefined,
     sortOrder: values.sortOrder,
     visible: values.visible,
@@ -199,7 +199,7 @@ export function MenuForm({
           name: d.name,
           path: d.path ?? '',
           icon: d.icon ?? '',
-          component: d.component ?? '',
+          // component: d.component ?? '',
           activePath: d.activePath ?? '',
           sortOrder: d.sortOrder,
           visible: d.visible,
@@ -244,7 +244,7 @@ export function MenuForm({
         const pid = parentFieldToApi(values.parentId, 'create');
         if (typeof pid === 'string') body.parentId = pid;
         const c = values.component?.trim();
-        if (c) body.component = c;
+        // if (c) body.component = c;
         const ap = values.activePath?.trim();
         if (ap) body.activePath = ap;
         const perm = values.permissionId?.trim();
