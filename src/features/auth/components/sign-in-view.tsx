@@ -64,7 +64,6 @@ export default function SignInViewPage() {
       }
       const nextPath = safePostLoginPath(searchParams.get('redirect'));
       router.push(nextPath);
-      router.refresh();
     } catch {
       // 网络层错误由 request 拦截器统一 Toast
     }

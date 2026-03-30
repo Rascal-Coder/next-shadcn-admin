@@ -62,7 +62,6 @@ export default function SignUpViewPage() {
         return;
       }
       router.push('/dashboard/overview');
-      router.refresh();
     } catch {
       // 网络层错误由 request 拦截器统一 Toast
     }

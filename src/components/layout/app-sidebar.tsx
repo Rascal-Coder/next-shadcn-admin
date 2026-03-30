@@ -28,10 +28,9 @@ import {
   SidebarMenuSubItem,
   SidebarRail
 } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useDashboardMenu } from '@/components/layout/dashboard-menu-provider';
-import { navItems } from '@/config/nav-config';
 import type { MenuTreeNodeView } from '@/features/roles/types/menu-tree-node';
-import { useFilteredNavItems } from '@/hooks/use-nav';
 import {
   menuNodeMatchesPathname,
   menuSubtreeHasActivePath,
@@ -69,10 +68,13 @@ const USER_MENU = {
 function MenuTreeSidebarItems({
   nodes,
   pathname,
+  tree,
   nested = false
 }: {
   nodes: MenuTreeNodeView[];
   pathname: string;
+  /** 完整菜单树，用于目录入口 path 与落地页同高亮 */
+  tree: MenuTreeNodeView[];
   nested?: boolean;
 }) {
   return (
@@ -114,6 +116,7 @@ function MenuTreeSidebarItems({
                       <MenuTreeSidebarItems
                         nodes={childList}
                         pathname={pathname}
+                        tree={tree}
                         nested
                       />
                     </SidebarMenuSub>
@@ -140,6 +143,7 @@ function MenuTreeSidebarItems({
                     <MenuTreeSidebarItems
                       nodes={childList}
                       pathname={pathname}
+                      tree={tree}
                       nested
                     />
                   </SidebarMenuSub>
@@ -156,7 +160,7 @@ function MenuTreeSidebarItems({
                 <SidebarMenuButton
                   asChild
                   tooltip={node.name}
-                  isActive={menuNodeMatchesPathname(pathname, node)}
+                  isActive={menuNodeMatchesPathname(pathname, node, tree)}
                 >
                   <Link href={href}>
                     <Icon className='size-4' />
@@ -171,7 +175,7 @@ function MenuTreeSidebarItems({
             <SidebarMenuSubItem key={node.id}>
               <SidebarMenuSubButton
                 asChild
-                isActive={menuNodeMatchesPathname(pathname, node)}
+                isActive={menuNodeMatchesPathname(pathname, node, tree)}
               >
                 <Link href={href}>
                   <span>{node.name}</span>
@@ -187,12 +191,27 @@ function MenuTreeSidebarItems({
   );
 }
 
+/** 菜单树请求中：侧栏导航占位，避免空白闪烁 */
+function SidebarNavSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <SidebarMenuItem key={i}>
+          <div className='flex items-center gap-2 px-2 py-1.5'>
+            <Skeleton className='size-4 shrink-0 rounded-sm' />
+            <Skeleton className='h-4 flex-1 rounded' />
+          </div>
+        </SidebarMenuItem>
+      ))}
+    </>
+  );
+}
+
 export default function AppSidebar() {
   const pathname = usePathname();
   const { isOpen } = useMediaQuery();
-  const { bootstrapped, bypassMenuGuard, menuNodesForSidebar, fallbackPath } =
+  const { bootstrapped, menuNodesForSidebar, menuNodesRaw, fallbackPath } =
     useDashboardMenu();
-  const staticItems = useFilteredNavItems(navItems);
   const showBackendMenu = bootstrapped && menuNodesForSidebar.length > 0;
 
   const brandHref = bootstrapped ? fallbackPath : APP_BRAND.homeUrl;
@@ -235,71 +254,15 @@ export default function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>导航</SidebarGroupLabel>
           <SidebarMenu>
-            {!bootstrapped ? null : showBackendMenu ? (
+            {!bootstrapped ? (
+              <SidebarNavSkeleton />
+            ) : showBackendMenu ? (
               <MenuTreeSidebarItems
                 nodes={menuNodesForSidebar}
                 pathname={pathname}
+                tree={menuNodesRaw}
               />
-            ) : bypassMenuGuard ? (
-              staticItems.map((item) => {
-                const Icon = item.icon ? Icons[item.icon] : Icons.logo;
-                return item?.items && item?.items?.length > 0 ? (
-                  <Collapsible
-                    key={item.title}
-                    asChild
-                    defaultOpen={item.isActive}
-                    className='group/collapsible'
-                  >
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton
-                          tooltip={item.title}
-                          isActive={pathname === item.url}
-                        >
-                          {item.icon && <Icon />}
-                          <span>{item.title}</span>
-                          <IconChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items?.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={pathname === subItem.url}
-                              >
-                                <Link href={subItem.url}>
-                                  <span>{subItem.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.title}
-                      isActive={pathname === item.url}
-                    >
-                      <Link href={item.url}>
-                        <Icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })
-            ) : (
-              <MenuTreeSidebarItems
-                nodes={menuNodesForSidebar}
-                pathname={pathname}
-              />
-            )}
+            ) : null}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

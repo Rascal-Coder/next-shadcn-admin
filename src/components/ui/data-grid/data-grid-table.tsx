@@ -45,12 +45,15 @@ const bodyCellSpacingVariants = cva('', {
 
 function getPinningStyles<TData>(column: Column<TData>): CSSProperties {
   const isPinned = column.getIsPinned();
+  const size = column.getSize();
 
   return {
     left: isPinned === 'left' ? `${column.getStart('left')}px` : undefined,
     right: isPinned === 'right' ? `${column.getAfter('right')}px` : undefined,
     position: isPinned ? 'sticky' : 'relative',
-    width: column.getSize(),
+    width: size,
+    // 与 TanStack 列宽一致，避免 table-auto 下 sticky 列被压窄导致右侧固定列显示不全
+    minWidth: isPinned ? size : undefined,
     zIndex: isPinned ? 1 : 0
   };
 }
@@ -103,7 +106,6 @@ function DataGridTableHeadRow<TData>({
       key={headerGroup.id}
       className={cn(
         'bg-muted/80 dark:bg-muted',
-        props.tableLayout?.headerBorder && 'border-border border-b',
         props.tableLayout?.cellBorder && '[&_>:last-child]:border-e-0',
         props.tableLayout?.stripped && 'bg-transparent',
         props.tableLayout?.headerBackground === false && 'bg-transparent',
@@ -158,6 +160,7 @@ function DataGridTableHeadRowCell<TData>({
       className={cn(
         'text-foreground relative text-left align-middle font-medium whitespace-nowrap rtl:text-right [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
         headerCellSpacing,
+        props.tableLayout?.headerBorder && 'border-border border-b',
         props.tableLayout?.cellBorder && 'border-e',
         props.tableLayout?.columnsResizable &&
           column.getCanResize() &&
@@ -207,7 +210,8 @@ function DataGridTableBody({ children }: { children: ReactNode }) {
   return (
     <tbody
       className={cn(
-        '[&_tr:last-child]:border-0',
+        // rowBorder 时分割线画在 td 上；最后一行去掉底边以免与表格外框重复
+        '[&_tr:last-child>td]:border-b-0',
         props.tableLayout?.rowRounded &&
           '[&_td:first-child]:rounded-s-lg [&_td:last-child]:rounded-e-lg',
         props.tableClassNames?.body
@@ -226,9 +230,6 @@ function DataGridTableBodyRowSkeleton({ children }: { children: ReactNode }) {
       className={cn(
         'hover:bg-muted/50 data-[state=selected]:bg-muted transition-colors',
         props.onRowClick && 'cursor-pointer',
-        !props.tableLayout?.stripped &&
-          props.tableLayout?.rowBorder &&
-          'border-b',
         props.tableLayout?.cellBorder && '[&_>:last-child]:border-e-0',
         props.tableLayout?.stripped &&
           'odd:bg-muted/90 odd:hover:bg-muted hover:bg-transparent',
@@ -258,6 +259,9 @@ function DataGridTableBodyRowSkeletonCell<TData>({
       className={cn(
         'align-middle',
         bodyCellSpacing,
+        !props.tableLayout?.stripped &&
+          props.tableLayout?.rowBorder &&
+          'border-border border-b',
         props.tableLayout?.cellBorder && 'border-e',
         props.tableLayout?.columnsResizable &&
           column.getCanResize() &&
@@ -303,9 +307,6 @@ function DataGridTableBodyRow<TData>({
       className={cn(
         'hover:bg-muted/50 data-[state=selected]:bg-muted transition-colors',
         props.onRowClick && 'cursor-pointer',
-        !props.tableLayout?.stripped &&
-          props.tableLayout?.rowBorder &&
-          'border-b',
         props.tableLayout?.cellBorder && '[&_>:last-child]:border-e-0',
         props.tableLayout?.stripped &&
           'odd:bg-muted/90 odd:hover:bg-muted hover:bg-transparent',
@@ -321,17 +322,23 @@ function DataGridTableBodyRow<TData>({
 function DataGridTableBodyRowExpandded<TData>({ row }: { row: Row<TData> }) {
   const { props, table } = useDataGrid();
 
+  const expandedContent = table
+    .getAllColumns()
+    .find((column) => column.columnDef.meta?.expandedContent)
+    ?.columnDef.meta?.expandedContent?.(row.original);
+
+  // 树形/子行展开仅增加子 <tr>，与 meta.expandedContent 详情行无关；无内容时勿插入 colspan 行，否则会打乱列宽与右侧固定列对齐
+  if (expandedContent == null) {
+    return null;
+  }
+
   return (
-    <tr
-      className={cn(
-        props.tableLayout?.rowBorder && '[&:not(:last-child)>td]:border-b'
-      )}
-    >
-      <td colSpan={row.getVisibleCells().length}>
-        {table
-          .getAllColumns()
-          .find((column) => column.columnDef.meta?.expandedContent)
-          ?.columnDef.meta?.expandedContent?.(row.original)}
+    <tr>
+      <td
+        colSpan={row.getVisibleCells().length}
+        className={cn(props.tableLayout?.rowBorder && 'border-border border-b')}
+      >
+        {expandedContent}
       </td>
     </tr>
   );
@@ -378,6 +385,9 @@ function DataGridTableBodyRowCell<TData>({
       className={cn(
         'align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
         bodyCellSpacing,
+        !props.tableLayout?.stripped &&
+          props.tableLayout?.rowBorder &&
+          'border-border border-b',
         props.tableLayout?.cellBorder && 'border-e',
         props.tableLayout?.columnsResizable &&
           column.getCanResize() &&

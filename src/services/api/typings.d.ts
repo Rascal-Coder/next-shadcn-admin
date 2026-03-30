@@ -96,6 +96,8 @@ declare namespace API {
     parentId: string;
     name: string;
     path?: string;
+    /** 目录节点无独立页时，直达该 path 应 302 到的目标（如首个子菜单）；未返回则按子节点 sortOrder 取第一个 MENU */
+    redirectPath?: string;
     /** 激活路径（用于子路由高亮父级菜单等场景） */
     activePath?: string;
     menuType: 'DIRECTORY' | 'MENU' | 'BUTTON';

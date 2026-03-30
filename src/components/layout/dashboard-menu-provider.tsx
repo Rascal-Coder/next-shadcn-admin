@@ -1,13 +1,14 @@
 'use client';
 
 import type { MenuTreeNodeView } from '@/features/roles/types/menu-tree-node';
-import {
-  collectAllowedRoutePrefixes,
-  MENU_ROUTE_GUARD_BYPASS_ROLE_CODES
+import type {
+  DashboardMenuBootstrapPayload,
+  MenuRouteAccess
 } from '@/lib/menu-access';
 import {
+  buildDashboardMenuBootstrapFromNodes,
+  dashboardMenuBootstrapFromPayload,
   filterSidebarMenuNodes,
-  pickMenuFallbackPath,
   unwrapMenuTree
 } from '@/lib/menu-tree-nav';
 import { getAccessToken, syncAuthCookieFromStorage } from '@/lib/auth-storage';
@@ -28,10 +29,10 @@ import { toast } from 'sonner';
 
 export type DashboardMenuContextValue = {
   bootstrapped: boolean;
-  bypassMenuGuard: boolean;
   menuNodesRaw: MenuTreeNodeView[];
   menuNodesForSidebar: MenuTreeNodeView[];
-  menuPrefixes: Set<string> | null;
+  /** 为 null 表示未加载成功或无可用菜单路径 */
+  menuRouteAccess: MenuRouteAccess | null;
   fallbackPath: string;
 };
 
@@ -49,13 +50,32 @@ export function useDashboardMenu(): DashboardMenuContextValue {
   return ctx;
 }
 
-export function DashboardMenuProvider({ children }: { children: ReactNode }) {
+export function DashboardMenuProvider({
+  children,
+  initialMenuBootstrap = null
+}: {
+  children: ReactNode;
+  /** 服务端已拉取 /api/menus/tree 时传入，客户端不再重复请求菜单树 */
+  initialMenuBootstrap?: DashboardMenuBootstrapPayload | null;
+}) {
   const router = useRouter();
-  const [bootstrapped, setBootstrapped] = useState(false);
-  const [bypassMenuGuard, setBypassMenuGuard] = useState(false);
-  const [menuNodesRaw, setMenuNodesRaw] = useState<MenuTreeNodeView[]>([]);
-  const [menuPrefixes, setMenuPrefixes] = useState<Set<string> | null>(null);
-  const [fallbackPath, setFallbackPath] = useState('/dashboard/overview');
+  const [serverBootstrap] = useState(() =>
+    initialMenuBootstrap != null
+      ? dashboardMenuBootstrapFromPayload(initialMenuBootstrap)
+      : null
+  );
+
+  const [bootstrapped, setBootstrapped] = useState(() => !!serverBootstrap);
+  const [menuNodesRaw, setMenuNodesRaw] = useState<MenuTreeNodeView[]>(
+    () => serverBootstrap?.menuNodesRaw ?? []
+  );
+  const [menuRouteAccess, setMenuRouteAccess] =
+    useState<MenuRouteAccess | null>(
+      () => serverBootstrap?.menuRouteAccess ?? null
+    );
+  const [fallbackPath, setFallbackPath] = useState(
+    () => serverBootstrap?.fallbackPath ?? '/dashboard/overview'
+  );
 
   const menuNodesForSidebar = useMemo(
     () => filterSidebarMenuNodes(menuNodesRaw),
@@ -66,6 +86,7 @@ export function DashboardMenuProvider({ children }: { children: ReactNode }) {
     syncAuthCookieFromStorage();
   }, []);
 
+  /** 服务端已注入菜单时仅校验会话；否则 me + tree 拉取后用 buildDashboardMenuBootstrapFromNodes 统一聚合 */
   useEffect(() => {
     const token = getAccessToken()?.trim();
     if (!token) {
@@ -73,8 +94,8 @@ export function DashboardMenuProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    let alive = true;
     const ac = new AbortController();
-    setBootstrapped(false);
 
     void (async () => {
       try {
@@ -82,96 +103,87 @@ export function DashboardMenuProvider({ children }: { children: ReactNode }) {
           signal: ac.signal,
           skipErrorHandler: true
         });
-        if (ac.signal.aborted) return;
-
+        if (!alive || ac.signal.aborted) return;
         const meBody = meRes as { code?: number; data?: API.UserProfileDto };
         if (!isSuccess(meBody.code) || !meBody.data) {
           router.replace('/auth/sign-in');
           return;
         }
 
-        const bypass = MENU_ROUTE_GUARD_BYPASS_ROLE_CODES.has(
-          meBody.data.roleCode
-        );
-        setBypassMenuGuard(bypass);
+        if (serverBootstrap) {
+          if (serverBootstrap.menuRouteAccess.allowedPaths.size === 0) {
+            toast.error('当前账号未分配任何可访问菜单');
+          }
+          return;
+        }
 
         const treeRes = await menuControllerTree({
           signal: ac.signal,
           skipErrorHandler: true
         });
-        if (ac.signal.aborted) return;
+        if (!alive || ac.signal.aborted) return;
 
         const treeBody = treeRes as { code?: number; message?: string };
-        let nodes: MenuTreeNodeView[] = [];
 
         if (!isSuccess(treeBody.code)) {
-          if (!bypass) {
-            setMenuPrefixes(null);
-            setMenuNodesRaw([]);
-            setBootstrapped(false);
-            toast.error(
-              treeBody.message ??
-                '加载菜单权限失败，请确认后端已实现 GET /api/menus/tree'
-            );
-            return;
-          }
+          setMenuRouteAccess(null);
+          setMenuNodesRaw([]);
+          setBootstrapped(true);
           toast.error(
             treeBody.message ??
-              '加载菜单树失败，侧边栏将回退为本地导航（仅超级管理员）'
+              '加载菜单权限失败，请确认后端已实现 GET /api/menus/tree'
           );
-        } else {
-          nodes = unwrapMenuTree(treeRes);
+          return;
         }
 
-        const prefixes = collectAllowedRoutePrefixes(nodes);
+        const bootstrap = buildDashboardMenuBootstrapFromNodes(
+          unwrapMenuTree(treeRes)
+        );
 
-        if (!bypass) {
-          if (prefixes.size === 0) {
-            setMenuPrefixes(null);
-            setMenuNodesRaw([]);
-            setBootstrapped(false);
-            toast.error('当前账号未分配任何可访问菜单');
-            return;
-          }
-          setMenuPrefixes(prefixes);
-        } else {
-          setMenuPrefixes(null);
+        if (bootstrap.menuRouteAccess.allowedPaths.size === 0) {
+          toast.error('当前账号未分配任何可访问菜单');
         }
 
-        const fallback = pickMenuFallbackPath(nodes, prefixes);
-        setMenuNodesRaw(nodes);
-        setFallbackPath(fallback);
+        setMenuRouteAccess(bootstrap.menuRouteAccess);
+        setMenuNodesRaw(bootstrap.menuNodesRaw);
+        setFallbackPath(bootstrap.fallbackPath);
         setBootstrapped(true);
       } catch (e) {
         if (axios.isAxiosError(e) && e.code === 'ERR_CANCELED') return;
         if (ac.signal.aborted) return;
-        setMenuPrefixes(null);
-        setMenuNodesRaw([]);
-        setBootstrapped(false);
-        toast.error(
-          e instanceof Error ? e.message : '加载菜单权限失败，请稍后重试'
-        );
+        if (!alive) return;
+        if (!serverBootstrap) {
+          setMenuRouteAccess(null);
+          setMenuNodesRaw([]);
+          setBootstrapped(true);
+          toast.error(
+            e instanceof Error ? e.message : '加载菜单权限失败，请稍后重试'
+          );
+        } else {
+          router.replace('/auth/sign-in');
+        }
       }
     })();
 
-    return () => ac.abort();
-  }, [router]);
+    return () => {
+      alive = false;
+      ac.abort();
+    };
+  }, [router, serverBootstrap]);
 
   const value = useMemo(
     (): DashboardMenuContextValue => ({
       bootstrapped,
-      bypassMenuGuard,
       menuNodesRaw,
       menuNodesForSidebar,
-      menuPrefixes,
+      menuRouteAccess,
       fallbackPath
     }),
     [
       bootstrapped,
-      bypassMenuGuard,
       menuNodesRaw,
       menuNodesForSidebar,
-      menuPrefixes,
+      menuRouteAccess,
       fallbackPath
     ]
   );

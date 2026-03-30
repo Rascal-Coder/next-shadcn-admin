@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -292,174 +291,173 @@ export function MenuForm({
     <Form<MenuFormValues>
       form={form}
       onSubmit={form.handleSubmit(onSubmit)}
-      className='space-y-4'
+      className='flex min-h-0 flex-1 flex-col'
     >
-      <FormField
-        control={form.control}
-        name='parentId'
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>父级菜单</FormLabel>
-            <Select
-              value={field.value}
-              onValueChange={field.onChange}
-              disabled={form.formState.isSubmitting}
-            >
-              <FormControl>
-                <SelectTrigger className='w-full'>
-                  <SelectValue placeholder='请选择' />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {parentOptions.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormDescription>不选默认为顶级菜单。</FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className='min-h-0 flex-1 space-y-4 overflow-y-auto pb-2'>
+        <FormField
+          control={form.control}
+          name='parentId'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>父级菜单</FormLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={form.formState.isSubmitting}
+              >
+                <FormControl>
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='请选择' />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {parentOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <FormInput
-        control={form.control}
-        name='name'
-        label='菜单名称'
-        required
-        placeholder='请输入菜单名称或 i18n key'
-        description='此标识将决定菜单在不同语言下的显示名称。'
-      />
+        <FormInput
+          control={form.control}
+          name='name'
+          label='菜单名称'
+          required
+          placeholder='请输入菜单名称或 i18n key'
+        />
 
-      <FormField
-        control={form.control}
-        name='menuType'
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>
-              类型
-              <span className='ml-1 text-red-500'>*</span>
-            </FormLabel>
-            <Select
-              value={field.value}
-              onValueChange={field.onChange}
-              disabled={form.formState.isSubmitting}
-            >
-              <FormControl>
-                <SelectTrigger className='w-full'>
-                  <SelectValue placeholder='请选择' />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {menuTypeOptions.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+        <FormField
+          control={form.control}
+          name='menuType'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                类型
+                <span className='ml-1 text-red-500'>*</span>
+              </FormLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={form.formState.isSubmitting}
+              >
+                <FormControl>
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='请选择' />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {menuTypeOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <FormInput
-        control={form.control}
-        name='path'
-        label='路由地址'
-        required
-        placeholder='请输入路由地址'
-        maxLength={200}
-        description='最多 200 字符'
-      />
+        <FormInput
+          control={form.control}
+          name='path'
+          label='路由地址'
+          required
+          placeholder='请输入路由地址'
+          maxLength={200}
+        />
 
-      <FormInput
-        control={form.control}
-        name='icon'
-        label='菜单图标'
-        required
-        placeholder='请输入菜单图标类名'
-        maxLength={50}
-        description='最多 50 字符'
-      />
+        <FormInput
+          control={form.control}
+          name='icon'
+          label='菜单图标'
+          required
+          placeholder='请输入菜单图标类名'
+          maxLength={50}
+        />
 
-      <FormField
-        control={form.control}
-        name='permissionId'
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>绑定权限</FormLabel>
-            <Select
-              value={field.value}
-              onValueChange={field.onChange}
-              disabled={form.formState.isSubmitting}
-            >
-              <FormControl>
-                <SelectTrigger className='w-full'>
-                  <SelectValue placeholder='请选择' />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {permissionOptions.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormDescription>
-              与 Casbin 权限标识对应；角色勾选该菜单时汇总此权限。
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+        <FormField
+          control={form.control}
+          name='permissionId'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>绑定权限</FormLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={form.formState.isSubmitting}
+              >
+                <FormControl>
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='请选择' />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {permissionOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <FormInput
-        control={form.control}
-        name='component'
-        label='重定向地址'
-        placeholder='请输入'
-        description='对应后端 component 字段，可选。'
-      />
+        <FormInput
+          control={form.control}
+          name='component'
+          label='重定向地址'
+          placeholder='请输入'
+        />
 
-      <FormInput
-        control={form.control}
-        name='activePath'
-        label='激活路径'
-        placeholder='用于子路由高亮父级菜单，如 /dashboard/overview'
-        description='用于子路由高亮父级菜单等场景；留空表示不单独配置。'
-      />
+        <FormInput
+          control={form.control}
+          name='activePath'
+          label='激活路径'
+          placeholder='用于子路由高亮父级菜单，如 /dashboard/overview'
+        />
 
-      <FormInput
-        control={form.control}
-        name='sortOrder'
-        label='排序'
-        type='number'
-        min={0}
-      />
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-4'>
+          <FormInput
+            className='min-w-0 flex-1'
+            control={form.control}
+            name='sortOrder'
+            label='排序'
+            type='number'
+            min={0}
+          />
+          <FormSwitch
+            className='min-w-0 flex-1'
+            control={form.control}
+            name='visible'
+            label='在菜单中显示'
+            showDescription={false}
+            variant='field'
+          />
+        </div>
+      </div>
 
-      <FormSwitch
-        control={form.control}
-        name='visible'
-        label='在菜单中显示'
-        showDescription={false}
-      />
-
-      <div className='flex flex-wrap justify-end gap-2 pt-2'>
-        <Button
-          type='button'
-          variant='outline'
-          onClick={onCancel}
-          disabled={form.formState.isSubmitting}
-        >
-          取消
-        </Button>
-        <Button type='submit' disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? '提交中…' : '确认'}
-        </Button>
+      <div className='bg-card border-border shrink-0 border-t pt-4'>
+        <div className='flex flex-wrap justify-end gap-2'>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={onCancel}
+            disabled={form.formState.isSubmitting}
+          >
+            取消
+          </Button>
+          <Button type='submit' disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? '提交中…' : '确认'}
+          </Button>
+        </div>
       </div>
     </Form>
   );

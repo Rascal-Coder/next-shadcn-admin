@@ -39,6 +39,10 @@ interface DataGridColumnHeaderProps<TData, TValue>
   pinnable?: boolean;
   filter?: ReactNode;
   visibility?: boolean;
+  /** 固定到左侧菜单项文案（例如中文「固定左侧」） */
+  pinLeftLabel?: string;
+  /** 固定到右侧菜单项文案（例如中文「固定右侧」） */
+  pinRightLabel?: string;
 }
 
 function DataGridColumnHeader<TData, TValue>({
@@ -47,7 +51,9 @@ function DataGridColumnHeader<TData, TValue>({
   icon,
   className,
   filter,
-  visibility = false
+  visibility = false,
+  pinLeftLabel = 'Pin to left',
+  pinRightLabel = 'Pin to right'
 }: DataGridColumnHeaderProps<TData, TValue>) {
   const { isLoading, table, props, recordCount } = useDataGrid();
   const moveColumn = (direction: 'left' | 'right') => {
@@ -208,7 +214,7 @@ function DataGridColumnHeader<TData, TValue>({
                   }
                 >
                   <ArrowLeftToLine className='size-3.5!' aria-hidden='true' />
-                  <span className='grow'>Pin to left</span>
+                  <span className='grow'>{pinLeftLabel}</span>
                   {column.getIsPinned() === 'left' && (
                     <Check className='text-primary size-4 opacity-100!' />
                   )}
@@ -221,7 +227,7 @@ function DataGridColumnHeader<TData, TValue>({
                   }
                 >
                   <ArrowRightToLine className='size-3.5!' aria-hidden='true' />
-                  <span className='grow'>Pin to right</span>
+                  <span className='grow'>{pinRightLabel}</span>
                   {column.getIsPinned() === 'right' && (
                     <Check className='text-primary size-4 opacity-100!' />
                   )}

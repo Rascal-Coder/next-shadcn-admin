@@ -1,21 +1,15 @@
 'use client';
 
-import { AUTH_ACCESS_TOKEN_KEY } from '@/lib/auth-constants';
+import { clearDashboardNavHistory } from '@/lib/dashboard-nav-history';
+import { clearMenuBootstrapCache } from '@/lib/menu-bootstrap-cache';
+import { useAuthStore } from '@/stores/auth-store';
 
-const ACCESS_TOKEN_KEY = AUTH_ACCESS_TOKEN_KEY;
-
-export { AUTH_ACCESS_TOKEN_KEY };
-
-const ACCESS_TOKEN_COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 7;
-
-function syncAccessTokenCookie(token: string | null): void {
-  if (typeof document === 'undefined') return;
-  if (token) {
-    document.cookie = `${ACCESS_TOKEN_KEY}=${encodeURIComponent(token)}; path=/; max-age=${ACCESS_TOKEN_COOKIE_MAX_AGE_SEC}; SameSite=Lax`;
-    return;
-  }
-  document.cookie = `${ACCESS_TOKEN_KEY}=; path=/; max-age=0`;
-}
+export { AUTH_ACCESS_TOKEN_KEY } from '@/lib/auth-constants';
+export {
+  getAccessToken,
+  syncAuthCookieFromStorage,
+  useAuthStore
+} from '@/stores/auth-store';
 
 /**
  * 从登录/注册 data 中解析访问令牌。
@@ -27,16 +21,7 @@ export function extractAccessToken(
   return t.length > 0 ? t : null;
 }
 
-export function getAccessToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    return localStorage.getItem(ACCESS_TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
-
-/** 持久化登录/注册返回的令牌，失败返回 false（例如 accessToken 为空） */
+/** 持久化登录/注册返回的令牌（Zustand persist + Cookie 同步），失败返回 false */
 export function persistAuthFromLoginData(
   data: API.AuthSessionDataDto
 ): boolean {
@@ -44,8 +29,7 @@ export function persistAuthFromLoginData(
   if (!token) return false;
   if (typeof window === 'undefined') return false;
   try {
-    localStorage.setItem(ACCESS_TOKEN_KEY, token);
-    syncAccessTokenCookie(token);
+    useAuthStore.getState().setAccessToken(token);
     return true;
   } catch {
     return false;
@@ -55,15 +39,10 @@ export function persistAuthFromLoginData(
 export function clearAuthStorage(): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    syncAccessTokenCookie(null);
+    useAuthStore.getState().clearToken();
+    clearMenuBootstrapCache();
+    clearDashboardNavHistory();
   } catch {
     /* ignore */
   }
-}
-
-/** 将 localStorage 中的令牌同步到 Cookie（升级或无痕恢复会话时 middleware 可识别） */
-export function syncAuthCookieFromStorage(): void {
-  const token = getAccessToken();
-  syncAccessTokenCookie(token);
 }

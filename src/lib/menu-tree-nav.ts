@@ -1,20 +1,20 @@
 import type { MenuTreeNodeView } from '@/features/roles/types/menu-tree-node';
 import { Icons } from '@/components/icons';
+import { normalizeAppPathname } from '@/lib/app-pathname';
 import {
+  collectMenuRouteAccess,
   normalizeMenuRoutePath,
-  pickFirstNavigableMenuPath
+  pickFirstNavigableMenuPath,
+  resolveDirectoryEntryRedirectTarget,
+  menuRouteAccessFromPayload,
+  type DashboardMenuBootstrapPayload,
+  type MenuRouteAccess
 } from '@/lib/menu-access';
 
 export function unwrapMenuTree(raw: unknown): MenuTreeNodeView[] {
   if (!raw || typeof raw !== 'object') return [];
   const data = (raw as { data?: API.MenuTreeDataDto }).data;
   return Array.isArray(data?.items) ? (data!.items as MenuTreeNodeView[]) : [];
-}
-
-function normalizePathname(pathname: string): string {
-  const base = pathname.split('?')[0] ?? pathname;
-  if (!base || base === '/') return '/';
-  return base.replace(/\/+$/g, '') || '/';
 }
 
 export function filterSidebarMenuNodes(
@@ -37,17 +37,25 @@ export function resolveMenuIconKey(
   return k in Icons ? k : undefined;
 }
 
-/** 当前路由是否视为命中该节点（path 或 activePath） */
+/** 当前路由是否视为命中该节点（path 或 activePath）；传入整棵树时可识别目录入口与落地页同激活 */
 export function menuNodeMatchesPathname(
   pathname: string,
-  node: MenuTreeNodeView
+  node: MenuTreeNodeView,
+  tree?: MenuTreeNodeView[]
 ): boolean {
-  const p = normalizePathname(pathname);
-  for (const raw of [node.path, node.activePath]) {
-    const route = normalizeMenuRoutePath(raw);
-    if (!route) continue;
-    if (p === route) return true;
-    if (route !== '/' && p.startsWith(`${route}/`)) return true;
+  const p = normalizeAppPathname(pathname);
+  const effectivePaths = new Set<string>([p]);
+  if (tree?.length) {
+    const alias = resolveDirectoryEntryRedirectTarget(tree, p);
+    if (alias) effectivePaths.add(normalizeAppPathname(alias));
+  }
+  for (const ep of effectivePaths) {
+    for (const raw of [node.path, node.activePath]) {
+      const route = normalizeMenuRoutePath(raw);
+      if (!route) continue;
+      if (ep === route) return true;
+      if (route !== '/' && ep.startsWith(`${route}/`)) return true;
+    }
   }
   return false;
 }
@@ -55,13 +63,17 @@ export function menuNodeMatchesPathname(
 /** 子树内是否有任一导航节点匹配当前 path（用于展开父级） */
 export function menuSubtreeHasActivePath(
   pathname: string,
-  node: MenuTreeNodeView
+  node: MenuTreeNodeView,
+  tree?: MenuTreeNodeView[]
 ): boolean {
-  if (node.menuType !== 'BUTTON' && menuNodeMatchesPathname(pathname, node)) {
+  if (
+    node.menuType !== 'BUTTON' &&
+    menuNodeMatchesPathname(pathname, node, tree)
+  ) {
     return true;
   }
   for (const c of node.children ?? []) {
-    if (menuSubtreeHasActivePath(pathname, c)) return true;
+    if (menuSubtreeHasActivePath(pathname, c, tree)) return true;
   }
   return false;
 }
@@ -118,4 +130,33 @@ export function pickMenuFallbackPath(
     (a, b) => a.length - b.length || a.localeCompare(b)
   );
   return sorted[0] ?? '/dashboard/overview';
+}
+
+/** 菜单节点列表 → Provider / 服务端共用的聚合（与 collect + fallback 规则一致） */
+export type DashboardMenuBootstrapData = {
+  menuNodesRaw: MenuTreeNodeView[];
+  menuRouteAccess: MenuRouteAccess;
+  fallbackPath: string;
+};
+
+export function buildDashboardMenuBootstrapFromNodes(
+  menuNodesRaw: MenuTreeNodeView[]
+): DashboardMenuBootstrapData {
+  const menuRouteAccess = collectMenuRouteAccess(menuNodesRaw);
+  const fallbackPath =
+    menuRouteAccess.allowedPaths.size === 0
+      ? '/dashboard/overview'
+      : pickMenuFallbackPath(menuNodesRaw, menuRouteAccess.allowedPaths);
+  return { menuNodesRaw, menuRouteAccess, fallbackPath };
+}
+
+/** RSC 传入的 payload 还原为与 buildDashboardMenuBootstrapFromNodes 相同结构 */
+export function dashboardMenuBootstrapFromPayload(
+  p: DashboardMenuBootstrapPayload
+): DashboardMenuBootstrapData {
+  return {
+    menuNodesRaw: p.menuNodesRaw,
+    menuRouteAccess: menuRouteAccessFromPayload(p.menuRouteAccess),
+    fallbackPath: p.fallbackPath
+  };
 }

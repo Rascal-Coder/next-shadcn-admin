@@ -83,5 +83,6 @@ export const Icons = {
   account: IconUserCircle,
   profile: IconUser,
   notification: IconBell,
-  chat: IconMessage
+  chat: IconMessage,
+  shop: IconShoppingBag
 };
